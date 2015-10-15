@@ -1,6 +1,6 @@
 {
   "name": "exgrid",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "extremely powerful yet extensible gird component",
   "main": "lib/grid.js",
   "scripts": {
