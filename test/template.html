@@ -1,0 +1,24 @@
+<table>
+  <thead>
+    <tr>
+      <th data-sort="string">name</th>
+      <th data-sort="number">age</th>
+      <th>score</th>
+      <th>percentage</th>
+      <th>money</th>
+      <th>active</th>
+      <th>action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>{name}</td>
+      <td>{age}</td>
+      <td data-format="integer">{score}</td>
+      <td data-render="percentage"></td>
+      <td data-format="formatMoney">{money}</td>
+      <td data-render="setActive"></td>
+      <td data-react="$stat" data-render="renderAction"></td>
+    </tr>
+  </tbody>
+</table>
