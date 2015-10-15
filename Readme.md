@@ -91,9 +91,10 @@ grid.setData(data)
 
 options including :
 
-  * perpage (Number) the max count of rows for rendering
-  * [paging] (Boolean: false) using paging
+  * perpage (Number) the max count of rows for rendering, recommand always set
   * [remote] (Boolean: false) set this to true to make the grid works on remote mode
+  * [paging] (Boolean: false) using paging
+  * [page] (Number false) start page number (default 0)
   * [formatters] (Object) user defined formatter functions
   * [renders] (Object) user defined render functions, called with `model` and the binded node
 
@@ -101,9 +102,9 @@ options including :
 
 Set the data with Object array, should always be called after remote request.
 
-### .prepend(Object)
+### .prepend(Object, [element])
 
-Render the object to the first row.
+Render the object to the first row or the provided element.
 
 ### .setPage(n)
 
@@ -119,7 +120,7 @@ Create row with obj and prepend to el (default: frist child of tbody)
 
 ### .sort(field, direction, method)
 
-Sort grid with field name and direction (-1 or 1) or with the given sort method (value cound be `string` `number` or a sort function)
+Sort grid with field name and direction (-1 or 1) or with the given sort method (the value cound be `string` `number` or a sort function)
 
 ### .filter(field, val)
 
