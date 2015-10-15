@@ -11,8 +11,10 @@
     "url": "git+ssh://git@github.com/chemzqm/exgrid.git"
   },
   "keywords": [
-    "extensible",
-    "grid"
+    "grid",
+    "react",
+    "featured",
+    "extensible"
   ],
   "author": "chemzqm@gmail.com",
   "license": "MIT",
