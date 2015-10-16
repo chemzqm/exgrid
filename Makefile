@@ -7,6 +7,9 @@ test-webpack:
 	@open http://localhost:8080/bundle
 	@cd test && webpack-dev-server --hot --inline
 
+umd:
+	@webpack lib/grid.js target/exgrid.js --output-library exgrid --output-library-target umd
+
 test:
 	@node_modules/.bin/karma start --single-run
 
