@@ -3,10 +3,11 @@
 [![NPM version](https://badge.fury.io/js/exgrid.png)](http://badge.fury.io/js/exgrid)
 [![Dependency Status](https://david-dm.org/chemzqm/exgrid.png)](https://david-dm.org/chemzqm/exgrid)
 [![Build Status](https://secure.travis-ci.org/chemzqm/exgrid.png)](http://travis-ci.org/chemzqm/exgrid)
+[![Coverage Status](https://coveralls.io/repos/chemzqm/exgrid/badge.svg?branch=master&service=github)](https://coveralls.io/github/chemzqm/exgrid?branch=master)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-Exgrid is built on simple [components](https://component.github.io), yet including all the features for daily usage, ie:
+Exgrid is built on simple [components](https://component.github.io), yet including all the features for daily usage, ie:1jjjjj
 
 * paging
 * sorting
@@ -17,6 +18,8 @@ Exgrid is built on simple [components](https://component.github.io), yet includi
 * event delegation
 
 The api is straightforward and magic is limited to make it quite easy to work with.
+
+Example is coming soon....
 
 ## Usage
 
