@@ -113,11 +113,11 @@ Render the object to the first row or the provided element.
 
 Set page number to n (0 based).
 
-### setTotal(n)
+### .setTotal(n)
 
 Set total count for pager to work properly.
 
-### prepend(obj, [element])
+### .prepend(obj, [element])
 
 Create row with obj and prepend to el (default: frist child of tbody)
 
