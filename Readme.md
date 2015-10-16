@@ -97,7 +97,7 @@ options including :
   * perpage [__Infinit__] the max count of rows for rendering, recommand always set
   * remote [__false__] set this to true to make the grid works on remote mode
   * paging [__false__] using paging
-  * page [0] start page number (0 based)
+  * page [__0__] start page number (0 based)
   * formatters [__{}__] user defined formatter functions
   * renders [__{}__] user defined render functions, called with `model` and the binded node
 
