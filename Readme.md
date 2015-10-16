@@ -7,7 +7,7 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-Exgrid is built on simple [components](https://component.github.io), yet including all the features for daily usage, ie:1jjjjj
+Exgrid is built on simple [components](https://component.github.io), yet including all the features for daily usage, ie:
 
 * paging
 * sorting
