@@ -1,5 +1,5 @@
+var path = require('path')
 // Karma configuration
-// Generated on Fri Mar 20 2015 18:17:25 GMT+0100 (CET)
 module.exports = function (config) {
   config.set({
 
@@ -28,7 +28,7 @@ module.exports = function (config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage'],
 
     // web server port
     port: 9876,
@@ -53,6 +53,14 @@ module.exports = function (config) {
             { test: /\.html$/, loader: 'html' },
             { test: /\.css$/, loader: 'style!css' },
             { test: /\.json$/, loader: 'json' }
+        ],
+        preLoaders: [
+          // instrument only testing sources with Istanbul
+          {
+            test: /\.js$/,
+            include: path.resolve('lib/'),
+            loader: 'istanbul-instrumenter'
+          }
         ]
       }
     },
@@ -61,7 +69,15 @@ module.exports = function (config) {
     },
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false
+    singleRun: true,
+    coverageReporter: {
+      dir: 'coverage/',
+      reporters: [
+        { type: 'html', subdir: 'html' },
+        { type: 'lcovonly', subdir: 'lcov' },
+        { type: 'cobertura', subdir: 'cobertura' }
+      ]
+    }
   })
 }
 
