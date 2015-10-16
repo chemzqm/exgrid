@@ -21,6 +21,14 @@ The api is straightforward and magic is limited to make it quite easy to work wi
 
 Example is coming soon....
 
+## Install
+
+with npm
+
+  npm install exgrid --save
+
+Or user [umd](https://github.com/umdjs/umd) file from [here](https://raw.githubusercontent.com/chemzqm/exgrid/master/target/exgrid.js)
+
 ## Usage
 
 Define a template like this:
