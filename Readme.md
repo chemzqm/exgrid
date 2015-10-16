@@ -94,12 +94,12 @@ grid.setData(data)
 
 options including :
 
-  * perpage (Number) the max count of rows for rendering, recommand always set
-  * [remote] (Boolean: false) set this to true to make the grid works on remote mode
-  * [paging] (Boolean: false) using paging
-  * [page] (Number false) start page number (default 0)
-  * [formatters] (Object) user defined formatter functions
-  * [renders] (Object) user defined render functions, called with `model` and the binded node
+  * perpage [__Infinit__] the max count of rows for rendering, recommand always set
+  * remote [__false__] set this to true to make the grid works on remote mode
+  * paging [__false__] using paging
+  * page [__false__] start page number (default 0)
+  * formatters [__{}__] user defined formatter functions
+  * renders [__{}__] user defined render functions, called with `model` and the binded node
 
 ### .setData(Array)
 
