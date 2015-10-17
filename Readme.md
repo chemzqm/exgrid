@@ -27,7 +27,7 @@ with npm
 
     npm install exgrid --save
 
-Or user [umd](https://github.com/umdjs/umd) file from [here](https://raw.githubusercontent.com/chemzqm/exgrid/master/target/exgrid.js)
+Or use [umd](https://github.com/umdjs/umd) file from [here](https://raw.githubusercontent.com/chemzqm/exgrid/master/target/exgrid.js)
 
 ## Usage
 
