@@ -9,19 +9,14 @@ html {
   box-sizing: inherit;
 }
 
-body {
-  padding: 60px;
-  font: 300 12px "Helvetica Neue", Helvetica, Arial;
-  min-height: 1000px;
-}
-#placeholder {
-  width: 600px;
+#tab1 {
+  width: 100%;
   margin: 0 auto;
 }
-#placeholder > div {
+#tab1 > div {
   position: relative;
 }
-#placeholder .overlay {
+#tab1 .overlay {
   background: rgba(0,0,0,.25);
 }
 .exgrid-pager {
@@ -29,7 +24,6 @@ body {
 }
 .shows-table table {
   width: 100%;
-  border: 1px solid #dddddd;
   border-collapse: separate;
   border-left: 0;
   border-radius: 4px;
@@ -51,6 +45,7 @@ body {
   line-height: 20px;
   text-align: left;
   vertical-align: top;
+  min-width: 100px;
 }
 .shows-table table td {
   border-top: 1px solid #dddddd;
@@ -112,6 +107,68 @@ table thead tr th.sort.desc:before {
 }
 .shows-table table td.dirty {
   border: 1px solid red;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   user-select: none;
 }
 
+#tab1 .exgrid-pager {
+  margin-top: 10px;
+  padding: 0;
+  font-size: 14px;
+}
+
+.exgrid-pager li {
+  display: inline-block;
+}
+
+.exgrid-pager-hide {
+  opacity: .2;
+}
+.exgrid-pager li.active a {
+  font-weight: bold;
+  border-color: #ddd;
+}
+.exgrid-pager li a {
+  text-decoration: none;
+  border-radius: 3px;
+  border: 1px solid #eee;
+  padding: 3px 8px;
+  margin: 0 2px;
+  color: #2a2a2a;
+}
+.exgrid-pager li.prev a,
+.exgrid-pager li.next a{
+  font-weight: bolder;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  filter: alpha(opacity=65);
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  opacity: .45;
+}
+button {
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  background-image: none;
+  font-weight: 400;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.shows-table .save {
+  width: 80px;
+}

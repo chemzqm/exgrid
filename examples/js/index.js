@@ -1,17 +1,18 @@
-require('../grid.css')
-require('./test.css')
 require('overlay-component/overlay.css')
 require('component-notice/notice.css')
+var tabify = require('./tabify.js')
 var classes = require('classes')
 var Overlay = require('overlay')
 var spin = require('spin')
 var Notice = require('notice')
-var template = require('./template.html')
-var Grid = require('..')
-var data = require('./data.json')
-var placeholder = document.createElement('div')
-document.body.appendChild(placeholder)
-placeholder.id = 'placeholder'
+var template = require('../template.html')
+var data = require('../data.json')
+var Grid = require('../..')
+
+var el = document.getElementById('tabs')
+tabify(el)
+
+var placeholder = document.getElementById('tab1')
 placeholder.className = 'shows-table'
 
 var grid = new Grid(template, {
@@ -84,14 +85,7 @@ grid.on('click', function (e, row) {
   }
 })
 
-placeholder.appendChild(grid.el)
 var overlay = Overlay(grid.el)
+placeholder.appendChild(grid.el)
 grid.setData(data)
 
-var filterEl = document.createElement('input')
-filterEl.type = 'text'
-placeholder.insertBefore(filterEl, placeholder.firstChild)
-filterEl.addEventListener('keyup', function (e) {
-  var v = filterEl.value
-  grid.filter('name', v)
-})

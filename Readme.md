@@ -1,6 +1,8 @@
 #Exgrid
 
 [![NPM version](https://badge.fury.io/js/exgrid.png)](http://badge.fury.io/js/exgrid)
+[![DOC](https://inch-ci.org/github/chemzqm/exgrid.svg?branch=master)](https://inch-ci.org/github/chemzqm/exgrid.svg?branch=master)
+[![Code Climate](https://codeclimate.com/github/chemzqm/exgrid/badges/gpa.svg)](https://codeclimate.com/github/chemzqm/exgrid)
 [![Dependency Status](https://david-dm.org/chemzqm/exgrid.png)](https://david-dm.org/chemzqm/exgrid)
 [![Build Status](https://secure.travis-ci.org/chemzqm/exgrid.png)](http://travis-ci.org/chemzqm/exgrid)
 [![Coverage Status](https://coveralls.io/repos/chemzqm/exgrid/badge.svg?branch=master&service=github)](https://coveralls.io/github/chemzqm/exgrid?branch=master)

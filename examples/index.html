@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Exgrid</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="css/cayman.css">
+    <link rel="stylesheet" href="css/test.css">
+    <link rel="stylesheet" href="css/solarized_dark.css">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Exgrid</h1>
+      <h2 class="project-tagline">feature rich grid component built on simple components</h2>
+      <a href="https://github.com/chemzqm/exgrid" class="btn">View on GitHub</a>
+      <a href="https://github.com/chemzqm/exgrid#api" class="btn">Documentation</a>
+      <a href="https://github.com/chemzqm/exgrid/zipball/master" class="btn">Download .zip</a>
+    </section>
+
+    <section class="main-content">
+      <h1>Features</h1>
+      <ul>
+        <li><strong>paging</strong> with build in pager, could be replaced </li>
+        <li><strong>sorting</strong> by click headers, user defined function is also supported</li>
+        <li><strong>filter</strong> filter with string or your filter function</li>
+        <li><strong>Local/Remote mode</strong> both supported, could be switched easily</li>
+        <li><strong>formatter/render</strong> define your reusable function for data rendering</li>
+        <li><strong>data reactive</strong> automatically reative the change on data</li>
+        <li><strong>Event delegation</strong> improve the performance and get the desired data easily</li>
+      </ul>
+      <h1>Play with it</h1>
+      <ul class="tabs" id="tabs">
+        <li class="active"><a href="#tab1">Demo</a>
+        <li><a href="#tab2">Template</a>
+        <li><a href="#tab3">Config</a>
+        <li><a href="#tab4">Event</a>
+        <li><a href="#tab5">Data</a>
+      </ul>
+      <div class="tabs-content">
+        <div id="tab1">
+        </div>
+        <div id="tab2">
+          <pre>
+            <code class="html">
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th class="sort" data-sort="string"&gt;name&lt;/th&gt;
+      &lt;th class="sort" data-sort="number"&gt;age&lt;/th&gt;
+      &lt;th class="sort" data-sort="number"&gt;score&lt;/th&gt;
+      &lt;th class="sort" data-sort="number"&gt;percentage&lt;/th&gt;
+      &lt;th class="sort" data-sort="number"&gt;money&lt;/th&gt;
+      &lt;th&gt;active&lt;/th&gt;
+      &lt;th&gt;action&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td class="left"&gt;{name}&lt;/td&gt;
+      &lt;td&gt;{age}&lt;/td&gt;
+      &lt;td data-format="integer"&gt;{score}&lt;/td&gt;
+      &lt;td data-render="percentage"&gt;&lt;/td&gt;
+      &lt;td class="money" data-format="chineseMoney"&gt;{money}&lt;/td&gt;
+      &lt;td data-render="setActive" class="center"&gt;&lt;/td&gt;
+      &lt;td data-react="$stat" data-render="renderAction"&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+            </code>
+          </pre>
+        </div>
+        <div id="tab3">
+          <pre>
+            <code>
+var grid = new Grid(template, {
+  perpage: 10,
+  formatters: {
+    chineseMoney: function (money) {
+      return '¥' + money.toFixed(2)
+    }
+  },
+  renders: {
+    percentage: function (model, el) {
+      el.textContent = (model.percent * 100).toFixed() + '%'
+    },
+    setActive: function (model, el) {
+      var cb = document.createElement('input')
+      cb.type = 'checkbox'
+      cb.checked = model.isActive
+      el.innerHTML = ''
+      cb.addEventListener('change', function () {
+        // save value to model
+        model.isActive = cb.checked
+      }, false)
+      el.appendChild(cb)
+    },
+    renderAction: function (model, el) {
+      console.log(model)
+      el.innerHTML = '&lt;button class="save" ' + (model.changed() ? '' : 'disabled') + '&gt;save&lt;/button&gt;'
+    }
+  }
+})
+placeholder.appendChild(grid.el)
+grid.setData(data)
+            </code>
+          </pre>
+        </div>
+        <div id="tab4">
+          <pre>
+            <code>
+grid.on('click', function (e, row) {
+  if (e.target.className === 'save') {
+    var model = row.model
+    var changed = model.changed()
+    changed.id = row.id
+    overlay.show()
+    var s = spin(overlay.el).text('saving')
+    if (changed) {
+      setTimeout(function () {
+        s.remove()
+        overlay.hide()
+        Notice('saved', {
+          type: 'success',
+          closable: false,
+          duration: 2000
+        })
+        model.clean()
+      }, 400)
+    }
+  }
+})
+
+grid.on('click', function (e, row) {
+  var el = e.target
+  if (classes(el).has('money')) {
+    var model = row.model
+    el.innerHTML = '&lt;input style="width:100%;" type="number" required  min="0.00" value="' + model.money + '"&gt;'
+    var input = el.children[0]
+    input.focus()
+    var save = function () {
+      var v = Number(input.value)
+      model.money = v
+    }
+    input.addEventListener('keyup', function (e) {
+      if (e.which === 13) {
+        input.blur()
+      }
+    })
+    input.addEventListener('blur', save)
+  }
+})
+            </code>
+          </pre>
+        </div>
+        <div id="tab5">
+          <pre>
+            <code>
+{
+  "_id": "561eb4e2ebd3da83cca919cd",
+  "index": 0,
+  "guid": "e4a3c415-cc1e-4ea2-ac51-643ab7682749",
+  "isActive": false,
+  "balance": "$1,973.10",
+  "picture": "http://placehold.it/32x32",
+  "age": 25,
+  "eyeColor": "green",
+  "name": "Beth Henderson",
+  "gender": "female",
+  "company": "COMTRACT",
+  "email": "bethhenderson@comtract.com",
+  "phone": "+1 (812) 525-3569",
+  "address": "557 Hinckley Place, Baker, Rhode Island, 109",
+  "score": 7472,
+  "money": 3286.94,
+  "percent": 0.4786
+}
+            </code>
+          </pre>
+        </div>
+      </div>
+      <blockquote>
+        <p><strong>tips:</strong> click headers to sort, change money by click</p>
+      </blockquote>
+      <footer class="site-footer">
+      <span class="site-footer-owner"><a href="https://github.com/chemzqm/exgrid">Exgrid</a> is maintained by <a href="https://github.com/chemzqm">chemzqm</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+    <script type="text/javascript" charset="utf-8" src="js/highlight.pack.js"> </script>
+    <script type="text/javascript" charset="utf-8" src="js/bundle.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      hljs.initHighlightingOnLoad();
+    </script>
+  </body>
+</html>
