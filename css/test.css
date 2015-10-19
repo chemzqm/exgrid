@@ -1,0 +1,174 @@
+html {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  -webkit-box-sizing: inherit;
+  -moz-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
+#tab1 {
+  width: 100%;
+  margin: 0 auto;
+}
+#tab1 > div {
+  position: relative;
+}
+#tab1 .overlay {
+  background: rgba(0,0,0,.25);
+}
+.exgrid-pager {
+  margin-top: 15px;
+}
+.shows-table table {
+  width: 100%;
+  border-collapse: separate;
+  border-left: 0;
+  border-radius: 4px;
+  border-spacing: 0;
+  max-width: 100%;
+  background-color: transparent;
+}
+
+.shows-table tbody > tr:nth-child(odd) > td,
+.shows-table tbody > tr:nth-child(odd) > th {
+  background-color: #f9f9f9;
+}
+.shows-table table td.money {
+  width: 100px;
+}
+.shows-table table th, .shows-table table td {
+  padding: 10px 8px 6px 8px;
+  border-left: 1px solid #dddddd;
+  line-height: 20px;
+  text-align: left;
+  vertical-align: top;
+  min-width: 100px;
+}
+.shows-table table td {
+  border-top: 1px solid #dddddd;
+}
+
+.shows-table table tfoot td{
+  background-color: #F4F4F4;
+}
+
+.shows-table table td.center,
+.shows-table table th {
+  text-align: center;
+}
+
+.shows-table table td {
+  text-align: right;
+}
+.shows-table table td.left {
+  text-align: left;
+}
+
+.shows-table table tfoot {
+  line-height: 20px;
+}
+.shows-table table a {
+  text-decoration: none;
+  color: #000;
+}
+
+table thead tr th.sort {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  position: relative;
+}
+table thead tr th.sort:hover {
+  text-decoration: underline;
+}
+
+table thead tr th.sort:before {
+  position: absolute;
+  content: "\2B06";
+  font-size: 9px;
+  right: 0px;
+  top: 10px;
+  color: transparent;
+}
+
+table thead tr th.sort.asc:before {
+  color: #66f;
+  content: "\2B06"
+}
+
+table thead tr th.sort.desc:before {
+  color: #66f;
+  content: "\2B07"
+}
+.shows-table table td.dirty {
+  border: 1px solid red;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#tab1 .exgrid-pager {
+  margin-top: 10px;
+  padding: 0;
+  font-size: 14px;
+}
+
+.exgrid-pager li {
+  display: inline-block;
+}
+
+.exgrid-pager-hide {
+  opacity: .2;
+}
+.exgrid-pager li.active a {
+  font-weight: bold;
+  border-color: #ddd;
+}
+.exgrid-pager li a {
+  text-decoration: none;
+  border-radius: 3px;
+  border: 1px solid #eee;
+  padding: 3px 8px;
+  margin: 0 2px;
+  color: #2a2a2a;
+}
+.exgrid-pager li.prev a,
+.exgrid-pager li.next a{
+  font-weight: bolder;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  filter: alpha(opacity=65);
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  opacity: .45;
+}
+button {
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  background-image: none;
+  font-weight: 400;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.shows-table .save {
+  width: 80px;
+}
