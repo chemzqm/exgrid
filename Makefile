@@ -18,4 +18,10 @@ test-coveralls:
 	@node_modules/.bin/karma start --single-run && \
 		cat ./coverage/lcov/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 
+doc:
+	@mkdir .gh-pages
+	@cp -r examples/* .gh-pages/
+	@ghp-import .gh-pages -n -p
+	@rm -fr .gh-pages
+
 .PHONY: test

@@ -9,6 +9,8 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
+[Try it now](https://chemzqm.github.io/exgrid/)
+
 Exgrid is built on simple [components](https://component.github.io), yet including all the features for daily usage, ie:
 
 * paging
@@ -20,8 +22,6 @@ Exgrid is built on simple [components](https://component.github.io), yet includi
 * event delegation
 
 The api is straightforward and magic is limited to make it quite easy to work with.
-
-Example is coming soon....
 
 ## Install
 
