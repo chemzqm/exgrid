@@ -1,8 +1,7 @@
 module.exports = {
   entry: ['./js/index.js'],
   output: {
-    path: '/js/',
-    filename: 'example.js'
+    filename: './js/example.js'
   },
   module: {
     loaders: [
