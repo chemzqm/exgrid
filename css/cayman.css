@@ -1,13 +1,16 @@
 * {
   box-sizing: border-box; }
 
+body, button, select, textarea, input, .btn {
+  font-family: 'ProximaNova','Helvetica Neue',Helvetica,Arial,sans-serif;
+}
 body {
   padding: 0;
   margin: 0;
-  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  color: #606c71; }
+  color: rgba(0,0,0,0.6);
+}
 
 a {
   color: #1e6bb8;
@@ -177,7 +180,7 @@ a {
     content: normal; }
 .main-content ul,
 .main-content ol {
-  margin-top: 0; }
+}
 .main-content blockquote {
   padding: 0 1rem;
   margin-left: 0;
@@ -196,9 +199,7 @@ a {
   .main-content table th {
     font-weight: bold; }
   .main-content table th,
-  .main-content table td {
-    padding: 0.5rem 1rem;
-    border: 1px solid #e9ebec; }
+  .main-content table td {}
 .main-content dl {
   padding: 0; }
   .main-content dl dt {

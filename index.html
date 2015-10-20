@@ -183,6 +183,41 @@ grid.on('click', function (e, row) {
       <blockquote>
         <p><strong>tips:</strong> click headers to sort, change money by click</p>
       </blockquote>
+      <div>
+        <div id="bind">
+          <div class="left">
+            <div id="grid">
+            </div>
+          </div>
+          <div class="right">
+              <form class="forms" id="form" action="">
+              <input type="hidden" name="id" id="id" />
+              <section>
+                <label for="name">name</label>
+                <input type="text" name="name" required>
+              </section>
+              <section>
+                <label for="company">company</label>
+                <input type="text" name="company" required>
+              </section>
+              <section>
+                <label for="age">age</label>
+                <input type="number" name="age" id="age" required/>
+              </section>
+              <section>
+                <label for="money">money</label>
+                <input type="text" name="money" required/>
+              </section>
+              <section>
+                <label class="checkbox" for="isActive"><input type="checkbox" name="isActive">active</label>
+              </section>
+              <section>
+                <button type="primary">Save</button>
+              </section>
+            </form>
+        </div>
+        </div>
+      </div>
       <footer class="site-footer">
       <span class="site-footer-owner"><a href="https://github.com/chemzqm/exgrid">Exgrid</a> is maintained by <a href="https://github.com/chemzqm">chemzqm</a>.</span>
 
