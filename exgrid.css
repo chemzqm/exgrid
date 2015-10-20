@@ -1,5 +1,8 @@
 .exgrid-pager {
-  margin: 0;
+  margin-top: 15px;
+}
+.exgrid-pager {
+  margin-top: 10px;
   padding: 0;
   font-size: 14px;
 }
@@ -27,3 +30,4 @@
 .exgrid-pager li.next a{
   font-weight: bolder;
 }
+
