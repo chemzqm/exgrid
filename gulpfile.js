@@ -7,7 +7,8 @@ var gutil = require('gulp-util')
 var gulp = require('gulp')
 var webpackConfig = require('./webpack.config.js')
 var inject = require('connect-livereload')()
-var path = require('path')
+var uglify = require('gulp-uglify')
+var webpackStream = require('webpack-stream')
 var myConfig = Object.create(webpackConfig)
 // for debugging
 myConfig.devtool = 'sourcemap'
@@ -40,20 +41,6 @@ gulp.task('serve', serve({
   middleware: inject
 }))
 
-var devCompiler = webpack(myConfig)
-var outputFile = path.resolve(myConfig.output.path, myConfig.output.filename)
-
-gulp.task('webpack:build-dev', function (callback) {
-  devCompiler.run(function (err, stats) {
-    if (err) throw new gutil.pluginError('webpack:build-dev', err) // eslint-disable-line
-    gutil.log('[webpack:build-dev]', stats.toString({
-      colors: true
-    }))
-    livereload.changed(outputFile)
-    callback()
-  })
-})
-
 gulp.task('webpack:dev-server', function () {
   var devServerConfig = Object.create(myConfig)
   // webpack need this to send request to webpack-dev-server
@@ -79,5 +66,12 @@ gulp.task('webpack:dev-server', function () {
     // Server listening
     gutil.log('[webpack-dev-server]', 'http://localhost:8080/')
   })
+})
+
+gulp.task('build', function () {
+  return gulp.src('./js/index.js')
+    .pipe(webpackStream(webpackConfig, webpack))
+    .pipe(uglify())
+    .pipe(gulp.dest('./'))
 })
 
