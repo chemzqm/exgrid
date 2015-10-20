@@ -19,6 +19,7 @@ test-coveralls:
 		cat ./coverage/lcov/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 
 doc:
+	@cd examples && gulp build
 	@mkdir .gh-pages
 	@cp -r examples/* .gh-pages/
 	@ghp-import .gh-pages -n -p
