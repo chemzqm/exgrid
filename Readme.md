@@ -148,6 +148,22 @@ Trigger the refresh event for data receiving.
 
 Unbind all events and remove the created elements
 
+### Row.model
+
+The binding model of row
+
+### Row.remove([silent])
+
+Remove the row and coresponding model, set silent to `true` to prevent grid remove this row
+
+### Model.changed()
+
+Get the changed properties from model as object, return false if not changed
+
+### Model.clean()
+
+Mark the model as clean stat, this would also remove `dirty` className from the children of this row
+
 ## Events
 
 * `construct` emitted on grid created with `params` as parameter
