@@ -1,7 +1,7 @@
 
 dev:
-	@webpack-dev-server -d --inline --hot --content-base example/
-	@open http://localhost:8080/webpack-dev-server/bundle
+	@open http://localhost:8080/
+	@cd examples && gulp
 
 test-webpack:
 	@open http://localhost:8080/bundle
