@@ -1,8 +1,8 @@
 <table>
   <thead>
     <tr>
-      <th class="sort" data-sort="string">name</th>
-      <th class="sort" data-sort="number">age</th>
+      <th class="sort" data-sort="name">name</th>
+      <th class="sort" data-sort="age">age</th>
       <th>company</th>
       <th class="sort" data-sort="number">money</th>
       <th>active</th>
@@ -13,7 +13,7 @@
       <td class="left">{name}</td>
       <td style="width:30px;">{age}</td>
       <td class="left">{company}</td>
-      <td class="money" data-format="chineseMoney">{money}</td>
+      <td class="money">¥{money | currency 2}</td>
       <td data-render="setActive" class="center"></td>
     </tr>
   </tbody>

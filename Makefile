@@ -1,16 +1,12 @@
-
-dev:
-	@open http://localhost:8080/
-	@cd examples && gulp
-
-test-webpack:
-	@open http://localhost:8080/bundle
-	@cd test && webpack-dev-server --hot --inline
-
-umd:
-	@webpack lib/grid.js target/exgrid.js --output-library exgrid --output-library-target umd
+build:
+	@open http://localhost:3000/example/index.html
+	@gulp
 
 test:
+	@open http://localhost:8080/bundle
+	@gulp webpack:test
+
+test-karma:
 	@node_modules/.bin/karma start --single-run
 
 test-coveralls:
@@ -19,10 +15,6 @@ test-coveralls:
 		cat ./coverage/lcov/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 
 doc:
-	@cd examples && gulp build
-	@mkdir .gh-pages
-	@cp -r examples/* .gh-pages/
-	@ghp-import .gh-pages -n -p
-	@rm -fr .gh-pages
+	@ghp-import example -n -p
 
 .PHONY: test

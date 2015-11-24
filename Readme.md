@@ -1,4 +1,4 @@
-#Exgrid
+# Exgrid
 
 [![NPM version](https://badge.fury.io/js/exgrid.png)](http://badge.fury.io/js/exgrid)
 [![DOC](https://inch-ci.org/github/chemzqm/exgrid.svg?branch=master)](https://inch-ci.org/github/chemzqm/exgrid.svg?branch=master)

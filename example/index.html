@@ -47,11 +47,11 @@
 &lt;table&gt;
   &lt;thead&gt;
     &lt;tr&gt;
-      &lt;th class="sort" data-sort="string"&gt;name&lt;/th&gt;
-      &lt;th class="sort" data-sort="number"&gt;age&lt;/th&gt;
-      &lt;th class="sort" data-sort="number"&gt;score&lt;/th&gt;
-      &lt;th class="sort" data-sort="number"&gt;percentage&lt;/th&gt;
-      &lt;th class="sort" data-sort="number"&gt;money&lt;/th&gt;
+      &lt;th class="sort" data-sort="name"&gt;name&lt;/th&gt;
+      &lt;th class="sort" data-sort="age"&gt;age&lt;/th&gt;
+      &lt;th class="sort" data-sort="score"&gt;score&lt;/th&gt;
+      &lt;th class="sort" data-sort="percent"&gt;percentage&lt;/th&gt;
+      &lt;th class="sort" data-sort="money"&gt;money&lt;/th&gt;
       &lt;th&gt;active&lt;/th&gt;
       &lt;th&gt;action&lt;/th&gt;
     &lt;/tr&gt;
@@ -60,11 +60,11 @@
     &lt;tr&gt;
       &lt;td class="left"&gt;{name}&lt;/td&gt;
       &lt;td&gt;{age}&lt;/td&gt;
-      &lt;td data-format="integer"&gt;{score}&lt;/td&gt;
-      &lt;td data-render="percentage"&gt;&lt;/td&gt;
-      &lt;td class="money" data-format="chineseMoney"&gt;{money}&lt;/td&gt;
-      &lt;td data-render="setActive" class="center"&gt;&lt;/td&gt;
-      &lt;td data-react="$stat" data-render="renderAction"&gt;&lt;/td&gt;
+      &lt;td&gt;{score | currency 0}&lt;/td&gt;
+      &lt;td&gt;{percent | percentage}&lt;/td&gt;
+      &lt;td react="money" class="money"&gt;¥{money | currency 2}&lt;/td&gt;
+      &lt;td react="isActive" data-render="setActive" class="center"&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;button class="save" react="$stat"&gt;save&lt;/button&gt;&lt;/td&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
@@ -76,32 +76,42 @@
             <code>
 var grid = new Grid(template, {
   perpage: 10,
-  formatters: {
-    chineseMoney: function (money) {
-      return '¥' + money.toFixed(2)
+  filters: {
+    percentage: function (val) {
+      return (val*100).toFixed() + '%'
     }
   },
-  renders: {
-    percentage: function (model, el) {
-      el.textContent = (model.percent * 100).toFixed() + '%'
-    },
+  bindings: {
+    react: function (prop) {
+      this.bind('$stat', function (model, el) {
+        var changed = model.changed()
+        if (prop === '$stat') {
+          el.disabled = changed === false ? true : false
+        } else {
+          if (changed && changed.hasOwnProperty(prop)) {
+            classes(el).add('dirty')
+          } else {
+            classes(el).remove('dirty')
+          }
+        }
+      })
+    }
+  },
+  delegate: {
     setActive: function (model, el) {
+      el.innerHTML = ''
       var cb = document.createElement('input')
       cb.type = 'checkbox'
       cb.checked = model.isActive
-      el.innerHTML = ''
       cb.addEventListener('change', function () {
         // save value to model
         model.isActive = cb.checked
       }, false)
       el.appendChild(cb)
-    },
-    renderAction: function (model, el) {
-      console.log(model)
-      el.innerHTML = '&lt;button class="save" ' + (model.changed() ? '' : 'disabled') + '&gt;save&lt;/button&gt;'
     }
   }
 })
+grid.local()
 placeholder.appendChild(grid.el)
 grid.setData(data)
             </code>
@@ -110,46 +120,41 @@ grid.setData(data)
         <div id="tab4">
           <pre>
             <code>
-grid.on('click', function (e, row) {
-  if (e.target.className === 'save') {
-    var model = row.model
-    var changed = model.changed()
-    changed.id = row.id
-    overlay.show()
-    var s = spin(overlay.el).text('saving')
-    if (changed) {
-      setTimeout(function () {
-        s.remove()
-        overlay.hide()
-        Notice('saved', {
-          type: 'success',
-          closable: false,
-          duration: 2000
-        })
-        model.clean()
-      }, 400)
-    }
+grid.bind('click', 'button.save',function (e, model) {
+  if (e.delegateTarget.disabled) return
+  var changed = model.changed()
+  overlay.show()
+  var s = spin(overlay.el).text('saving')
+  if (changed) {
+    setTimeout(function () {
+      s.remove()
+      overlay.hide()
+      Notice('saved', {
+        type: 'success',
+        closable: false,
+        duration: 2000
+      })
+      // mark model as clean
+      model.clean()
+    }, 400)
   }
 })
 
-grid.on('click', function (e, row) {
+grid.bind('click', 'td.money',function (e, model) {
   var el = e.target
-  if (classes(el).has('money')) {
-    var model = row.model
-    el.innerHTML = '&lt;input style="width:100%;" type="number" required  min="0.00" value="' + model.money + '"&gt;'
-    var input = el.children[0]
-    input.focus()
-    var save = function () {
-      var v = Number(input.value)
-      model.money = v
-    }
-    input.addEventListener('keyup', function (e) {
-      if (e.which === 13) {
-        input.blur()
-      }
-    })
-    input.addEventListener('blur', save)
+  el.innerHTML = '&lt;input style="width:100%;" type="number" required  min="0.00" value="' + model.money + '"&gt;'
+  var input = el.children[0]
+  input.focus()
+  var save = function () {
+    var v = Number(input.value)
+    model.money = v
   }
+  input.addEventListener('keyup', function (e) {
+    if (e.which === 13) {
+      input.blur()
+    }
+  })
+  input.addEventListener('blur', save)
 })
             </code>
           </pre>
@@ -194,22 +199,22 @@ grid.on('click', function (e, row) {
               <input type="hidden" name="id" id="id" />
               <section>
                 <label for="name">name</label>
-                <input type="text" name="name" required>
+                <input type="text" name="name" data-value="{name}" required>
               </section>
               <section>
                 <label for="company">company</label>
-                <input type="text" name="company" required>
+                <input type="text" name="company" data-value="{company}" required>
               </section>
               <section>
                 <label for="age">age</label>
-                <input type="number" name="age" id="age" required/>
+                <input type="number" name="age" id="age" data-value="{age}" required/>
               </section>
               <section>
                 <label for="money">money</label>
-                <input type="text" name="money" required/>
+                <input type="text" name="money" data-value="{money}" required/>
               </section>
               <section>
-                <label class="checkbox" for="isActive"><input type="checkbox" name="isActive">active</label>
+                <label class="checkbox" for="isActive"><input type="checkbox" name="isActive" data-checked="isActive">active</label>
               </section>
               <section>
                 <button type="primary">Save</button>
@@ -219,9 +224,11 @@ grid.on('click', function (e, row) {
         </div>
       </div>
       <footer class="site-footer">
-      <span class="site-footer-owner"><a href="https://github.com/chemzqm/exgrid">Exgrid</a> is maintained by <a href="https://github.com/chemzqm">chemzqm</a>.</span>
+        <span class="site-footer-owner">
+          <a href="https://github.com/chemzqm/exgrid">Exgrid</a>
+          is maintained by <a href="https://github.com/chemzqm">chemzqm</a>.
+        </span>
       </footer>
-
     </section>
     <script type="text/javascript" charset="utf-8" src="js/highlight.pack.js"> </script>
     <script type="text/javascript" charset="utf-8" src="js/example.js"></script>
