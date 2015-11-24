@@ -3,6 +3,7 @@ var USERS = require('./data.json')
 var template = require('./template.html')
 var Grid = require('..')
 var expect = require('expect')
+var domify = require('domify')
 
 var grid
 var parentNode = document.createElement('div')
@@ -20,6 +21,11 @@ describe('Grid()', function() {
 
   it('should init without new', function () {
     grid = Grid(template)
+    expect(grid.el).toExist()
+  })
+
+  it('should init with element template', function () {
+    grid = Grid(domify(template))
     expect(grid.el).toExist()
   })
 
@@ -88,6 +94,64 @@ describe('.sort(field, dir, method)', function() {
     })
     grid.sort('age', 1)
     expect(fired).toBe(true)
+  })
+})
+
+describe('sort on header click', function () {
+  it('should sort on herder click', function () {
+    grid = new Grid(template, {perpage: 10})
+    parentNode.appendChild(grid.el)
+    grid.local()
+    grid.setData(USERS)
+    var td = grid.el.querySelector('thead th.sort')
+    td.click()
+    expect(td.className).toMatch(/desc/)
+    var field = td.getAttribute('data-sort')
+    var trs = [].slice.call(grid.el.querySelectorAll('tbody > tr'))
+    trs.reduce(function (pre, cur) {
+      var val = grid.findModel(cur)[field]
+      if (pre) {
+        expect(pre > val).toBe(true)
+      }
+      return val
+    }, null)
+  })
+
+  it('should sort asc on another click', function () {
+    grid = new Grid(template, {perpage: 10})
+    parentNode.appendChild(grid.el)
+    grid.local()
+    grid.setData(USERS)
+    var td = grid.el.querySelector('thead th.sort')
+    td.click()
+    td.click()
+    expect(td.className).toMatch(/asc/)
+    var field = td.getAttribute('data-sort')
+    var trs = [].slice.call(grid.el.querySelectorAll('tbody > tr'))
+    trs.reduce(function (pre, cur) {
+      var val = grid.findModel(cur)[field]
+      if (pre) {
+        expect(pre < val).toBe(true)
+      }
+      return val
+    }, null)
+  })
+
+  it('should throw if field not in model', function () {
+    grid = new Grid(template, {perpage: 10})
+    parentNode.appendChild(grid.el)
+    grid.local()
+    grid.setData(USERS)
+    var td = grid.el.querySelector('thead th.error')
+    var e = new UIEvent('click', {
+        bubbles: true,
+        cancelable: false,
+        detail: 1
+    })
+    e.delegateTarget = td
+    expect(function(){
+      grid.headerClick(e)
+    }).toThrow(/model/)
   })
 })
 
