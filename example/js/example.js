@@ -5402,7 +5402,7 @@
 	  var template = el.querySelector('tbody > tr:last-child')
 	  template.parentNode.removeChild(template)
 	  var parentNode = el.querySelector('tbody')
-	  option.limit = option.perpage
+	  if (!option.limit) option.limit = option.perpage
 	  // super constructor
 	  ListRender.call(this, template, parentNode, option)
 	  this.handlers = {}
@@ -5583,7 +5583,6 @@
 	  this.emit('remove')
 	  this.events.unbind()
 	  this.off()
-	  return this
 	}
 	
 	/**

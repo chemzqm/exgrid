@@ -1,17 +1,14 @@
 # Exgrid
 
-[![NPM version](https://badge.fury.io/js/exgrid.png)](http://badge.fury.io/js/exgrid)
+[![NPM version](https://badge.fury.io/js/exgrid.svg)](http://badge.fury.io/js/exgrid)
 [![DOC](https://inch-ci.org/github/chemzqm/exgrid.svg?branch=master)](https://inch-ci.org/github/chemzqm/exgrid.svg?branch=master)
-[![Code Climate](https://codeclimate.com/github/chemzqm/exgrid/badges/gpa.svg)](https://codeclimate.com/github/chemzqm/exgrid)
-[![Dependency Status](https://david-dm.org/chemzqm/exgrid.png)](https://david-dm.org/chemzqm/exgrid)
-[![Build Status](https://secure.travis-ci.org/chemzqm/exgrid.png)](http://travis-ci.org/chemzqm/exgrid)
+[![Dependency Status](https://david-dm.org/chemzqm/exgrid.svg)](https://david-dm.org/chemzqm/exgrid)
+[![Build Status](https://secure.travis-ci.org/chemzqm/exgrid.svg)](http://travis-ci.org/chemzqm/exgrid)
 [![Coverage Status](https://coveralls.io/repos/chemzqm/exgrid/badge.svg?branch=master&service=github)](https://coveralls.io/github/chemzqm/exgrid?branch=master)
-
-[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
 [Try it now](https://chemzqm.github.io/exgrid/)
 
-Exgrid is built on simple [components](https://component.github.io), yet including all the features for daily usage, ie:
+Exgrid has rebuild with [reactive-lite](https://github.com/chemzqm/reactive-lite), beside flexable binding methods and binding resue for excellence performance, it can do:
 
 * paging
 * sorting
@@ -21,15 +18,11 @@ Exgrid is built on simple [components](https://component.github.io), yet includi
 * data change reactive
 * event delegation
 
-The api is straightforward and magic is limited to make it quite easy to work with.
-
 ## Install
 
 with npm
 
     npm install exgrid --save
-
-Or use [umd](https://github.com/umdjs/umd) file from [here](https://raw.githubusercontent.com/chemzqm/exgrid/master/target/exgrid.js)
 
 ## Usage
 
@@ -38,141 +31,108 @@ Define a template like this:
 <table>
   <thead>
     <tr>
-      <th data-sort="string">name</th>
-      <th data-sort="number">age</th>
-      <th data-sort="number">score</th>
-      <th data-sort="number">percentage</th>
-      <th data-sort="number">money</th>
+      <th class="sort" data-sort="name">name</th>
+      <th class="sort" data-sort="age">age</th>
+      <th>company</th>
+      <th class="sort" data-sort="number">money</th>
       <th>active</th>
-      <th>action</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td class="left">{name}</td>
-      <td>{age}</td>
-      <td data-format="integer">{score}</td>
-      <td data-render="percentage"></td>
-      <td class="money" data-format="chineseMoney">{money}</td>
+      <td style="width:30px;">{age}</td>
+      <td class="left">{company}</td>
+      <td class="money">¥{money | currency 2}</td>
       <td data-render="setActive" class="center"></td>
-      <td data-react="stat" data-render="renderAction"></td>
     </tr>
   </tbody>
-</table>
 ```
-_The last `tr` element in `tbody` is used as the template for repeat rendering the rows._
+_The last `tr` element in `tbody` is used as the template for repeat rendering._
 
 Init the grid, render it to html and set data:
 ``` js
 var grid = new Grid(template, {
   perpage: 10,
-  formatters: {
-    chineseMoney: function (money) {
-      return '¥' + money.toFixed(2)
+  // filters for reactive-lite
+  filters: {
+    percentage: function (val) {
+      return (val*100).toFixed() + '%'
     }
   },
-  renders: {
-    percentage: function (model, el) {
-      el.textContent = (model.percent * 100).toFixed() + '%'
-    },
+  // bindings for reactive-lite
+  bindings: {
+    react: function (prop) {
+      this.bind('$stat', function (model, el) {
+        ...
+      })
+    }
+  },
+  // delegate object for reactive-lite
+  delegate: {
     setActive: function (model, el) {
-      var cb = document.createElement('input')
-      cb.type = 'checkbox'
-      cb.checked = model.isActive
-      el.innerHTML = ''
-      cb.addEventListener('change', function () {
-        // save value to model
-        model.isActive = cb.checked
-      }, false)
-      el.appendChild(cb)
-    },
-    renderAction: function (model, el) {
-      el.innerHTML = '<button class="save" ' + (model.changed() ? '' : 'disabled') + '>save</button>'
+      ...
     }
   }
 })
-
-document.body.appendChild(grid.el)
-//data is array of plain javascript object
+// use local mode
+grid.local()
+// render element
+placeholder.appendChild(pager.el)
 grid.setData(data)
 ```
+## Events
 
+* `sort` emit with params when remote sort needed (including `sortField` `sortDirection`)
+* `filter` emit with params when remote filter needed (including `filterField` `filterValud`)
+* `page` emit with params when remote paging needed (including `curpage`, `perpage`)
+* `change` emit after table row add or removed
+* `remove` emit just before this component removed
 
 ##API
 
-### Grid(string | element, [options])
+### Grid(el, [option])
 
-options including :
+* `el` table element or template string as root node
+* `option` optional option for [list-render](https://github.com/chemzqm/list-render)
+* `option.perpage` max page count perpage, works with [pager](https://github.com/chemzqm/pager) (need Object.definePropety support)
+* `option.delegate` delegate object for [reactive](https://github.com/chemzqm/reactive-lite)
+* `option.bindings` bindings object for [reactive](https://github.com/chemzqm/reactive-lite)
+* `option.filters` filters object for [reactive](https://github.com/chemzqm/reactive-lite)
+* `option.model` [model](https://github.com/chemzqm/model) class used for generate model
+* `option.empty` String or Element rendered in parentNode when internal data list is empty
+* `option.limit` the limit number for render when `setData()` (equal to perpage if not set)
 
-  * perpage [__Infinit__] the max count of rows for rendering, recommand always set
-  * remote [__false__] set this to true to make the grid works on remote mode
-  * paging [__false__] using paging
-  * page [__0__] start page number (0 based)
-  * formatters [__{}__] user defined formatter functions
-  * renders [__{}__] user defined render functions, called with `model` and the binded node
+Exgrid inherits all methods from [list-render](https://github.com/chemzqm/list-render), the extra methods are shown below
 
-### .setData(Array)
+### .bind(type, selector, handler)
 
-Set the data with Object array, should always be called after remote request.
+Delegate event `type` to `selector` with `handler`,
+handler is called with event and a reactive model
 
-### .prepend(Object, [element])
+### .local()
 
-Render the object to the first row or the provided element.
+Make list works on local model, which means sort, filter and paging  only happens locally
 
-### .setPage(n)
+### .sort(field, dir, [method])
 
-Set page number to n (0 based).
+Sort the data by field, direction or method, when it's remote mode(default mode), emit event only
+
+### .filter(field, val|function)
+
+Filter the data by field, val or function, when it's remote mode(default mode), emit event only
+
+### .select(n)
+
+Select page `n`, when it's remote mode(default mode), emit event only
 
 ### .setTotal(n)
 
-Set total count for pager to work properly.
-
-### .prepend(obj, [element])
-
-Create row with obj and prepend to el (default: frist child of tbody)
-
-### .sort(field, direction, method)
-
-Sort grid with field name and direction (-1 or 1) or with the given sort method (the value cound be `string` `number` or a sort function)
-
-### .filter(field, val)
-
-Filter data with field and val (optional filter function), then redirect to first page and show data
-no data would be filtered when the val is null or empty string
-
-### .refresh()
-
-Trigger the refresh event for data receiving.
+Set total data count for paging, can not used for local mode
 
 ### .remove()
 
 Unbind all events and remove the created elements
-
-### Row.model
-
-The binding model of row
-
-### Row.remove([silent])
-
-Remove the row and coresponding model, set silent to `true` to prevent grid remove this row
-
-### Model.changed()
-
-Get the changed properties from model as object, return false if not changed
-
-### Model.clean()
-
-Mark the model as clean stat, this would also remove `dirty` className from the children of this row
-
-## Events
-
-* `construct` emitted on grid created with `params` as parameter
-* `sort` emitted on sorting with `params` as parameter (only emit on remote mode)
-* `page` emitted on paging with `params` as parameter (only emit on remote mode)
-* `empty` emitted when no data could be shown
-* `refresh` emitted when `refresh` is called
-* `click` emitted with `event` and `row` on body click
-* `destroy` emitted when grid is removed
 
 ## License
 
