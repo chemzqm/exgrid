@@ -1,5 +1,5 @@
 .gitignore
 test
 build
-target
 examples
+coverage
