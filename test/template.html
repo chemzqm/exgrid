@@ -1,12 +1,11 @@
 <table>
   <thead>
     <tr>
-      <th data-sort="string">name</th>
-      <th data-sort="number">age</th>
+      <th data-sort="name">name</th>
+      <th data-sort="age">age</th>
       <th>score</th>
       <th>percentage</th>
       <th>money</th>
-      <th>active</th>
       <th>action</th>
     </tr>
   </thead>
@@ -14,11 +13,10 @@
     <tr>
       <td>{name}</td>
       <td>{age}</td>
-      <td data-format="integer">{score}</td>
-      <td data-render="percentage"></td>
-      <td data-format="formatMoney">{money}</td>
-      <td data-render="setActive"></td>
-      <td data-react="$stat" data-render="renderAction"></td>
+      <td>{score | currency 0}</td>
+      <td>{percent}</td>
+      <td>{money | currency 2}</td>
+      <td><button class="remove">remove</button></td>
     </tr>
   </tbody>
 </table>

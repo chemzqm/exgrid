@@ -1,18 +1,30 @@
+// test entry file
+var testIndex = './test/test.js'
 var path = require('path')
-// Karma configuration
-module.exports = function (config) {
+var webpack = require('./webpack.config')
+var preLoaders = webpack.module.preLoaders || []
+// only files in lib
+preLoaders.push({
+  include: [path.resolve('lib')],
+  loader:'istanbul-instrumenter'
+})
+webpack.module.preLoaders = preLoaders
+
+module.exports = function(config) {
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
 
+
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['mocha'],
 
+
     // list of files / patterns to load in the browser
     files: [
-      'test/test_index.js'
+      testIndex
     ],
 
     // list of files to exclude
@@ -22,7 +34,7 @@ module.exports = function (config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/test_index.js': ['webpack']
+      'test/test.js': ['webpack']
     },
 
     // test results reporter to use
@@ -30,54 +42,47 @@ module.exports = function (config) {
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     reporters: ['progress', 'coverage'],
 
+
     // web server port
     port: 9876,
 
+
     // enable / disable colors in the output (reporters and logs)
     colors: true,
+
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
     logLevel: config.LOG_INFO,
 
+
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,
+
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     browsers: ['Firefox'],
 
     webpack: {
-      module: {
-        loaders: [
-            { test: /\.html$/, loader: 'html' },
-            { test: /\.css$/, loader: 'style!css' },
-            { test: /\.json$/, loader: 'json' }
-        ],
-        preLoaders: [
-          // instrument only testing sources with Istanbul
-          {
-            test: /\.js$/,
-            include: path.resolve('lib/'),
-            loader: 'istanbul-instrumenter'
-          }
-        ]
-      }
+      devtool: 'eval-source-map',
+      module: webpack.module
     },
+
     webpackMiddleware: {
-      noInfo: true
+        noInfo: true
     },
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: true,
+    singleRun: false,
     coverageReporter: {
       dir: 'coverage/',
       reporters: [
+        { type: 'text' },
         { type: 'html', subdir: 'html' },
         { type: 'lcovonly', subdir: 'lcov' },
         { type: 'cobertura', subdir: 'cobertura' }
       ]
     }
-  })
-}
-
+  });
+};
