@@ -13,7 +13,7 @@ html {
   width: 100%;
   margin: 0 auto;
 }
-#tab1 > div {
+#tab1 > table {
   position: relative;
 }
 #tab1 .overlay {

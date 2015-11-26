@@ -1,11 +1,11 @@
 <table>
   <thead>
     <tr>
-      <th class="sort" data-sort="string">name</th>
-      <th class="sort" data-sort="number">age</th>
-      <th class="sort" data-sort="number">score</th>
-      <th class="sort" data-sort="number">percentage</th>
-      <th class="sort" data-sort="number">money</th>
+      <th class="sort" data-sort="name">name</th>
+      <th class="sort" data-sort="age">age</th>
+      <th class="sort" data-sort="score">score</th>
+      <th class="sort" data-sort="percent">percentage</th>
+      <th class="sort" data-sort="money">money</th>
       <th>active</th>
       <th>action</th>
     </tr>
@@ -14,11 +14,11 @@
     <tr>
       <td class="left">{name}</td>
       <td>{age}</td>
-      <td data-format="integer">{score}</td>
-      <td data-render="percentage"></td>
-      <td class="money" data-format="chineseMoney">{money}</td>
-      <td data-render="setActive" class="center"></td>
-      <td data-react="$stat" data-render="renderAction"></td>
+      <td>{score | currency 0}</td>
+      <td>{percent | percentage}</td>
+      <td react="money" class="money">¥{money | currency 2}</td>
+      <td react="isActive" data-render="setActive" class="center"></td>
+      <td><button class="save" react="$stat">save</button></td>
     </tr>
   </tbody>
 </table>

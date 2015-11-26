@@ -5379,7 +5379,7 @@
 	var classes = __webpack_require__(16)
 	
 	/**
-	 * List constructor
+	 * Grid constructor
 	 *
 	 * `option` optional option for [list-render](https://github.com/chemzqm/list-render)
 	 * `option.delegate` delegate object for [reactive](https://github.com/chemzqm/reactive-lite)
@@ -5390,7 +5390,6 @@
 	 * `option.limit` the limit number for render when `setData()` (default no limit)
 	 *
 	 * @param {Element | String} el
-	 * @param {Element} scrollable
 	 * @param {Object} option
 	 * @api public
 	 */
@@ -9495,4 +9494,4 @@
 
 /***/ }
 /******/ ]);
-//# sourceMappingURL=example.js.map
+//# sourceMappingURL=bundle.js.map
