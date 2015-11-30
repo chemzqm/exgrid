@@ -54,9 +54,9 @@
 	var template = __webpack_require__(58)
 	var data = __webpack_require__(59)
 	var Grid = __webpack_require__(60)
-	var Pager = __webpack_require__(79)
+	var Pager = __webpack_require__(78)
 	var classes = __webpack_require__(16)
-	__webpack_require__(85)
+	__webpack_require__(83)
 	
 	var el = document.getElementById('tabs')
 	tabify(el)
@@ -5372,10 +5372,10 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var inherits = __webpack_require__(61)
-	var events = __webpack_require__(62)
+	var events = __webpack_require__(53)
 	var Emitter = __webpack_require__(10)
-	var ListRender = __webpack_require__(63)
-	var domify = __webpack_require__(78)
+	var ListRender = __webpack_require__(62)
+	var domify = __webpack_require__(77)
 	var classes = __webpack_require__(16)
 	
 	/**
@@ -5427,6 +5427,8 @@
 	  if (!th.hasAttribute('data-sort')) return
 	  e.preventDefault()
 	  var field = th.getAttribute('data-sort')
+	  var fields = Object.keys(this.model.options)
+	  if (fields.indexOf(field) === -1) throw new Error('Field [' + field + '] not in model')
 	  var dir = (classes(th).has('desc')) ? -1 : 1
 	  var ths = [].slice.call(th.parentNode.children)
 	  ths.forEach(function (node) {
@@ -5440,7 +5442,6 @@
 	      classes(node).remove('desc').remove('asc')
 	    }
 	  })
-	  if (!field) throw new Error('no binding field found')
 	  this.sort(field, dir)
 	}
 	
@@ -5579,6 +5580,7 @@
 	Grid.prototype.remove = function () {
 	  if (this._removed) return
 	  ListRender.prototype.remove.call(this)
+	  if (this.el.parentNode) this.el.parentNode.removeChild(this.el)
 	  this.emit('remove')
 	  this.events.unbind()
 	  this.off()
@@ -5635,192 +5637,10 @@
 /* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
-	
-	/**
-	 * Module dependencies.
-	 */
-	
-	var events = __webpack_require__(15);
-	var delegate = __webpack_require__(54);
-	
-	/**
-	 * Expose `Events`.
-	 */
-	
-	module.exports = Events;
-	
-	/**
-	 * Initialize an `Events` with the given
-	 * `el` object which events will be bound to,
-	 * and the `obj` which will receive method calls.
-	 *
-	 * @param {Object} el
-	 * @param {Object} obj
-	 * @api public
-	 */
-	
-	function Events(el, obj) {
-	  if (!(this instanceof Events)) return new Events(el, obj);
-	  if (!el) throw new Error('element required');
-	  if (!obj) throw new Error('object required');
-	  this.el = el;
-	  this.obj = obj;
-	  this._events = {};
-	}
-	
-	/**
-	 * Subscription helper.
-	 */
-	
-	Events.prototype.sub = function(event, method, cb){
-	  this._events[event] = this._events[event] || {};
-	  this._events[event][method] = cb;
-	};
-	
-	/**
-	 * Bind to `event` with optional `method` name.
-	 * When `method` is undefined it becomes `event`
-	 * with the "on" prefix.
-	 *
-	 * Examples:
-	 *
-	 *  Direct event handling:
-	 *
-	 *    events.bind('click') // implies "onclick"
-	 *    events.bind('click', 'remove')
-	 *    events.bind('click', 'sort', 'asc')
-	 *
-	 *  Delegated event handling:
-	 *
-	 *    events.bind('click li > a')
-	 *    events.bind('click li > a', 'remove')
-	 *    events.bind('click a.sort-ascending', 'sort', 'asc')
-	 *    events.bind('click a.sort-descending', 'sort', 'desc')
-	 *
-	 * @param {String} event
-	 * @param {String|function} [method]
-	 * @return {Function} callback
-	 * @api public
-	 */
-	
-	Events.prototype.bind = function(event, method){
-	  var e = parse(event);
-	  var el = this.el;
-	  var obj = this.obj;
-	  var name = e.name;
-	  var method = method || 'on' + name;
-	  var args = [].slice.call(arguments, 2);
-	
-	  // callback
-	  function cb(){
-	    var a = [].slice.call(arguments).concat(args);
-	    obj[method].apply(obj, a);
-	  }
-	
-	  // bind
-	  if (e.selector) {
-	    cb = delegate.bind(el, e.selector, name, cb);
-	  } else {
-	    events.bind(el, name, cb);
-	  }
-	
-	  // subscription for unbinding
-	  this.sub(name, method, cb);
-	
-	  return cb;
-	};
-	
-	/**
-	 * Unbind a single binding, all bindings for `event`,
-	 * or all bindings within the manager.
-	 *
-	 * Examples:
-	 *
-	 *  Unbind direct handlers:
-	 *
-	 *     events.unbind('click', 'remove')
-	 *     events.unbind('click')
-	 *     events.unbind()
-	 *
-	 * Unbind delegate handlers:
-	 *
-	 *     events.unbind('click', 'remove')
-	 *     events.unbind('click')
-	 *     events.unbind()
-	 *
-	 * @param {String|Function} [event]
-	 * @param {String|Function} [method]
-	 * @api public
-	 */
-	
-	Events.prototype.unbind = function(event, method){
-	  if (0 == arguments.length) return this.unbindAll();
-	  if (1 == arguments.length) return this.unbindAllOf(event);
-	
-	  // no bindings for this event
-	  var bindings = this._events[event];
-	  if (!bindings) return;
-	
-	  // no bindings for this method
-	  var cb = bindings[method];
-	  if (!cb) return;
-	
-	  events.unbind(this.el, event, cb);
-	};
-	
-	/**
-	 * Unbind all events.
-	 *
-	 * @api private
-	 */
-	
-	Events.prototype.unbindAll = function(){
-	  for (var event in this._events) {
-	    this.unbindAllOf(event);
-	  }
-	};
-	
-	/**
-	 * Unbind all events for `event`.
-	 *
-	 * @param {String} event
-	 * @api private
-	 */
-	
-	Events.prototype.unbindAllOf = function(event){
-	  var bindings = this._events[event];
-	  if (!bindings) return;
-	
-	  for (var method in bindings) {
-	    this.unbind(event, method);
-	  }
-	};
-	
-	/**
-	 * Parse `event`.
-	 *
-	 * @param {String} event
-	 * @return {Object}
-	 * @api private
-	 */
-	
-	function parse(event) {
-	  var parts = event.split(/ +/);
-	  return {
-	    name: parts.shift(),
-	    selector: parts.join(' ')
-	  }
-	}
-
-
-/***/ },
-/* 63 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var Model = __webpack_require__(64)
-	var Reactive = __webpack_require__(68)
-	var domify = __webpack_require__(76)
-	var uid = __webpack_require__(77)
+	var Model = __webpack_require__(63)
+	var Reactive = __webpack_require__(67)
+	var domify = __webpack_require__(75)
+	var uid = __webpack_require__(76)
 	var body = document.body
 	
 	/**
@@ -6331,7 +6151,7 @@
 
 
 /***/ },
-/* 64 */
+/* 63 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -6339,8 +6159,8 @@
 	 * Module dependencies.
 	 */
 	
-	var proto = __webpack_require__(65)
-	var util = __webpack_require__(67)
+	var proto = __webpack_require__(64)
+	var util = __webpack_require__(66)
 	var buildinRe = /^(\$stat|changed|emit|clean|on|off|attrs)$/
 	
 	/**
@@ -6371,7 +6191,7 @@
 	    if (!(this instanceof model)) return new model(attrs)
 	    attrs = attrs || {}
 	    this._callbacks = {}
-	    this.origAttrs = attrs
+	    this.origAttrs = Object.create(attrs)
 	    this.attrs = util.assign({}, attrs)
 	  }
 	
@@ -6463,7 +6283,7 @@
 
 
 /***/ },
-/* 65 */
+/* 64 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -6471,8 +6291,8 @@
 	 * Module dependencies.
 	 */
 	
-	var Emitter = __webpack_require__(66)
-	var util = __webpack_require__(67)
+	var Emitter = __webpack_require__(65)
+	var util = __webpack_require__(66)
 	
 	/**
 	 * Mixin emitter.
@@ -6555,7 +6375,7 @@
 
 
 /***/ },
-/* 66 */
+/* 65 */
 /***/ function(module, exports) {
 
 	
@@ -6722,7 +6542,7 @@
 
 
 /***/ },
-/* 67 */
+/* 66 */
 /***/ function(module, exports) {
 
 	/**
@@ -6761,22 +6581,15 @@
 
 
 /***/ },
-/* 68 */
+/* 67 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(69)
-
-
-/***/ },
-/* 69 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var util = __webpack_require__(70)
-	var domify = __webpack_require__(72)
-	var Binding = __webpack_require__(73)
-	var bindings = __webpack_require__(74)
-	var Emitter = __webpack_require__(10)
-	var filters = __webpack_require__(75)
+	var util = __webpack_require__(68)
+	var domify = __webpack_require__(70)
+	var Binding = __webpack_require__(71)
+	var bindings = __webpack_require__(72)
+	var Emitter = __webpack_require__(73)
+	var filters = __webpack_require__(74)
 	
 	/**
 	 * Reactive
@@ -6800,15 +6613,11 @@
 	  this.delegate = option.delegate || {}
 	  this.model = model
 	  this.el = el
-	  var config = option.config
 	  if (option.nobind) return
-	  if (config == null) {
-	    // this.checkModel(model)
-	    config = this.config = this.generateConfig()
-	    this._bindConfig(config)
-	  } else {
-	    this._bindConfig(config)
-	  }
+	  var config = option.config
+	  this.config = config ? config : this.generateConfig()
+	  if (!model) throw new TypeError('model is requried for reactive')
+	  this._bindConfig()
 	}
 	
 	Emitter(Reactive.prototype)
@@ -6834,10 +6643,10 @@
 	 * @param {Array} config
 	 * @api private
 	 */
-	Reactive.prototype._bindConfig = function (config) {
+	Reactive.prototype._bindConfig = function () {
 	  var root = this.el
 	  var reactive = this
-	  config.forEach(function (o) {
+	  this.config.forEach(function (o) {
 	    var el = util.findElement(root, o.indexes)
 	    var binding = new Binding(reactive, el, o.bindings)
 	    binding.active(el)
@@ -6942,7 +6751,7 @@
 	 */
 	Reactive.prototype.bind = function (model) {
 	  this.model = model
-	  this._bindConfig(this.config)
+	  this._bindConfig()
 	}
 	
 	/**
@@ -7012,10 +6821,10 @@
 
 
 /***/ },
-/* 70 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var unique = __webpack_require__(71)
+	var unique = __webpack_require__(69)
 	var funcRe = /\([^\s]*\)$/
 	
 	/**
@@ -7280,7 +7089,7 @@
 
 
 /***/ },
-/* 71 */
+/* 69 */
 /***/ function(module, exports) {
 
 	/*!
@@ -7314,7 +7123,7 @@
 
 
 /***/ },
-/* 72 */
+/* 70 */
 /***/ function(module, exports) {
 
 	
@@ -7432,11 +7241,11 @@
 
 
 /***/ },
-/* 73 */
+/* 71 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var unique = __webpack_require__(71)
-	var util = __webpack_require__(70)
+	var unique = __webpack_require__(69)
+	var util = __webpack_require__(68)
 	
 	/**
 	 * Create binding instance with reactive and el
@@ -7600,10 +7409,10 @@
 
 
 /***/ },
-/* 74 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(70)
+	var util = __webpack_require__(68)
 	var event = __webpack_require__(15)
 	
 	/**
@@ -7776,7 +7585,174 @@
 
 
 /***/ },
-/* 75 */
+/* 73 */
+/***/ function(module, exports) {
+
+	
+	/**
+	 * Expose `Emitter`.
+	 */
+	
+	module.exports = Emitter;
+	
+	/**
+	 * Initialize a new `Emitter`.
+	 *
+	 * @api public
+	 */
+	
+	function Emitter(obj) {
+	  if (obj) return mixin(obj);
+	};
+	
+	/**
+	 * Mixin the emitter properties.
+	 *
+	 * @param {Object} obj
+	 * @return {Object}
+	 * @api private
+	 */
+	
+	function mixin(obj) {
+	  for (var key in Emitter.prototype) {
+	    obj[key] = Emitter.prototype[key];
+	  }
+	  return obj;
+	}
+	
+	/**
+	 * Listen on the given `event` with `fn`.
+	 *
+	 * @param {String} event
+	 * @param {Function} fn
+	 * @return {Emitter}
+	 * @api public
+	 */
+	
+	Emitter.prototype.on =
+	Emitter.prototype.addEventListener = function(event, fn){
+	  this._callbacks = this._callbacks || {};
+	  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
+	    .push(fn);
+	  return this;
+	};
+	
+	/**
+	 * Adds an `event` listener that will be invoked a single
+	 * time then automatically removed.
+	 *
+	 * @param {String} event
+	 * @param {Function} fn
+	 * @return {Emitter}
+	 * @api public
+	 */
+	
+	Emitter.prototype.once = function(event, fn){
+	  function on() {
+	    this.off(event, on);
+	    fn.apply(this, arguments);
+	  }
+	
+	  on.fn = fn;
+	  this.on(event, on);
+	  return this;
+	};
+	
+	/**
+	 * Remove the given callback for `event` or all
+	 * registered callbacks.
+	 *
+	 * @param {String} event
+	 * @param {Function} fn
+	 * @return {Emitter}
+	 * @api public
+	 */
+	
+	Emitter.prototype.off =
+	Emitter.prototype.removeListener =
+	Emitter.prototype.removeAllListeners =
+	Emitter.prototype.removeEventListener = function(event, fn){
+	  this._callbacks = this._callbacks || {};
+	
+	  // all
+	  if (0 == arguments.length) {
+	    this._callbacks = {};
+	    return this;
+	  }
+	
+	  // specific event
+	  var callbacks = this._callbacks['$' + event];
+	  if (!callbacks) return this;
+	
+	  // remove all handlers
+	  if (1 == arguments.length) {
+	    delete this._callbacks['$' + event];
+	    return this;
+	  }
+	
+	  // remove specific handler
+	  var cb;
+	  for (var i = 0; i < callbacks.length; i++) {
+	    cb = callbacks[i];
+	    if (cb === fn || cb.fn === fn) {
+	      callbacks.splice(i, 1);
+	      break;
+	    }
+	  }
+	  return this;
+	};
+	
+	/**
+	 * Emit `event` with the given args.
+	 *
+	 * @param {String} event
+	 * @param {Mixed} ...
+	 * @return {Emitter}
+	 */
+	
+	Emitter.prototype.emit = function(event){
+	  this._callbacks = this._callbacks || {};
+	  var args = [].slice.call(arguments, 1)
+	    , callbacks = this._callbacks['$' + event];
+	
+	  if (callbacks) {
+	    callbacks = callbacks.slice(0);
+	    for (var i = 0, len = callbacks.length; i < len; ++i) {
+	      callbacks[i].apply(this, args);
+	    }
+	  }
+	
+	  return this;
+	};
+	
+	/**
+	 * Return array of callbacks for `event`.
+	 *
+	 * @param {String} event
+	 * @return {Array}
+	 * @api public
+	 */
+	
+	Emitter.prototype.listeners = function(event){
+	  this._callbacks = this._callbacks || {};
+	  return this._callbacks['$' + event] || [];
+	};
+	
+	/**
+	 * Check if this emitter has `event` handlers.
+	 *
+	 * @param {String} event
+	 * @return {Boolean}
+	 * @api public
+	 */
+	
+	Emitter.prototype.hasListeners = function(event){
+	  return !! this.listeners(event).length;
+	};
+
+
+/***/ },
+/* 74 */
 /***/ function(module, exports) {
 
 	/**
@@ -7868,7 +7844,7 @@
 
 
 /***/ },
-/* 76 */
+/* 75 */
 /***/ function(module, exports) {
 
 	
@@ -7986,7 +7962,7 @@
 
 
 /***/ },
-/* 77 */
+/* 76 */
 /***/ function(module, exports) {
 
 	/**
@@ -8009,7 +7985,7 @@
 
 
 /***/ },
-/* 78 */
+/* 77 */
 /***/ function(module, exports) {
 
 	
@@ -8127,16 +8103,16 @@
 
 
 /***/ },
-/* 79 */
+/* 78 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Emitter = __webpack_require__(80)
-	var events = __webpack_require__(81)
-	var domify = __webpack_require__(82)
+	var Emitter = __webpack_require__(79)
+	var events = __webpack_require__(53)
+	var domify = __webpack_require__(80)
 	var query = __webpack_require__(57)
 	var classes = __webpack_require__(16)
-	var tap = __webpack_require__(83)
-	var template = __webpack_require__(84)
+	var tap = __webpack_require__(81)
+	var template = __webpack_require__(82)
 	
 	var defineProperty = Object.defineProperty
 	/**
@@ -8350,7 +8326,7 @@
 
 
 /***/ },
-/* 80 */
+/* 79 */
 /***/ function(module, exports) {
 
 	
@@ -8517,189 +8493,7 @@
 
 
 /***/ },
-/* 81 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	/**
-	 * Module dependencies.
-	 */
-	
-	var events = __webpack_require__(15);
-	var delegate = __webpack_require__(54);
-	
-	/**
-	 * Expose `Events`.
-	 */
-	
-	module.exports = Events;
-	
-	/**
-	 * Initialize an `Events` with the given
-	 * `el` object which events will be bound to,
-	 * and the `obj` which will receive method calls.
-	 *
-	 * @param {Object} el
-	 * @param {Object} obj
-	 * @api public
-	 */
-	
-	function Events(el, obj) {
-	  if (!(this instanceof Events)) return new Events(el, obj);
-	  if (!el) throw new Error('element required');
-	  if (!obj) throw new Error('object required');
-	  this.el = el;
-	  this.obj = obj;
-	  this._events = {};
-	}
-	
-	/**
-	 * Subscription helper.
-	 */
-	
-	Events.prototype.sub = function(event, method, cb){
-	  this._events[event] = this._events[event] || {};
-	  this._events[event][method] = cb;
-	};
-	
-	/**
-	 * Bind to `event` with optional `method` name.
-	 * When `method` is undefined it becomes `event`
-	 * with the "on" prefix.
-	 *
-	 * Examples:
-	 *
-	 *  Direct event handling:
-	 *
-	 *    events.bind('click') // implies "onclick"
-	 *    events.bind('click', 'remove')
-	 *    events.bind('click', 'sort', 'asc')
-	 *
-	 *  Delegated event handling:
-	 *
-	 *    events.bind('click li > a')
-	 *    events.bind('click li > a', 'remove')
-	 *    events.bind('click a.sort-ascending', 'sort', 'asc')
-	 *    events.bind('click a.sort-descending', 'sort', 'desc')
-	 *
-	 * @param {String} event
-	 * @param {String|function} [method]
-	 * @return {Function} callback
-	 * @api public
-	 */
-	
-	Events.prototype.bind = function(event, method){
-	  var e = parse(event);
-	  var el = this.el;
-	  var obj = this.obj;
-	  var name = e.name;
-	  var method = method || 'on' + name;
-	  var args = [].slice.call(arguments, 2);
-	
-	  // callback
-	  function cb(){
-	    var a = [].slice.call(arguments).concat(args);
-	    obj[method].apply(obj, a);
-	  }
-	
-	  // bind
-	  if (e.selector) {
-	    cb = delegate.bind(el, e.selector, name, cb);
-	  } else {
-	    events.bind(el, name, cb);
-	  }
-	
-	  // subscription for unbinding
-	  this.sub(name, method, cb);
-	
-	  return cb;
-	};
-	
-	/**
-	 * Unbind a single binding, all bindings for `event`,
-	 * or all bindings within the manager.
-	 *
-	 * Examples:
-	 *
-	 *  Unbind direct handlers:
-	 *
-	 *     events.unbind('click', 'remove')
-	 *     events.unbind('click')
-	 *     events.unbind()
-	 *
-	 * Unbind delegate handlers:
-	 *
-	 *     events.unbind('click', 'remove')
-	 *     events.unbind('click')
-	 *     events.unbind()
-	 *
-	 * @param {String|Function} [event]
-	 * @param {String|Function} [method]
-	 * @api public
-	 */
-	
-	Events.prototype.unbind = function(event, method){
-	  if (0 == arguments.length) return this.unbindAll();
-	  if (1 == arguments.length) return this.unbindAllOf(event);
-	
-	  // no bindings for this event
-	  var bindings = this._events[event];
-	  if (!bindings) return;
-	
-	  // no bindings for this method
-	  var cb = bindings[method];
-	  if (!cb) return;
-	
-	  events.unbind(this.el, event, cb);
-	};
-	
-	/**
-	 * Unbind all events.
-	 *
-	 * @api private
-	 */
-	
-	Events.prototype.unbindAll = function(){
-	  for (var event in this._events) {
-	    this.unbindAllOf(event);
-	  }
-	};
-	
-	/**
-	 * Unbind all events for `event`.
-	 *
-	 * @param {String} event
-	 * @api private
-	 */
-	
-	Events.prototype.unbindAllOf = function(event){
-	  var bindings = this._events[event];
-	  if (!bindings) return;
-	
-	  for (var method in bindings) {
-	    this.unbind(event, method);
-	  }
-	};
-	
-	/**
-	 * Parse `event`.
-	 *
-	 * @param {String} event
-	 * @return {Object}
-	 * @api private
-	 */
-	
-	function parse(event) {
-	  var parts = event.split(/ +/);
-	  return {
-	    name: parts.shift(),
-	    selector: parts.join(' ')
-	  }
-	}
-
-
-/***/ },
-/* 82 */
+/* 80 */
 /***/ function(module, exports) {
 
 	
@@ -8817,7 +8611,7 @@
 
 
 /***/ },
-/* 83 */
+/* 81 */
 /***/ function(module, exports) {
 
 	var endEvents = [
@@ -8911,24 +8705,24 @@
 
 
 /***/ },
-/* 84 */
+/* 82 */
 /***/ function(module, exports) {
 
 	module.exports = "<ul class=\"pager\">\n  <li class=\"prev\"><a href=\"#\">&lsaquo;</a></li>\n  <li class=\"next\"><a href=\"#\">&rsaquo;</a></li>\n</ul>\n";
 
 /***/ },
-/* 85 */
+/* 83 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Overlay = __webpack_require__(11)
 	var Notice = __webpack_require__(52)
 	var spin = __webpack_require__(18)
 	var Grid = __webpack_require__(60)
-	var template = __webpack_require__(86)
+	var template = __webpack_require__(84)
 	var data = __webpack_require__(59)
-	var Reactive = __webpack_require__(68)
-	var Changed = __webpack_require__(87)
-	var Pager = __webpack_require__(79)
+	var Reactive = __webpack_require__(67)
+	var Changed = __webpack_require__(85)
+	var Pager = __webpack_require__(78)
 	
 	var placeholder = document.getElementById('grid')
 	placeholder.className = 'shows-table left'
@@ -8994,18 +8788,18 @@
 
 
 /***/ },
-/* 86 */
+/* 84 */
 /***/ function(module, exports) {
 
 	module.exports = "<table>\n  <thead>\n    <tr>\n      <th class=\"sort\" data-sort=\"name\">name</th>\n      <th class=\"sort\" data-sort=\"age\">age</th>\n      <th>company</th>\n      <th class=\"sort\" data-sort=\"number\">money</th>\n      <th>active</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td class=\"left\">{name}</td>\n      <td style=\"width:30px;\">{age}</td>\n      <td class=\"left\">{company}</td>\n      <td class=\"money\">¥{money | currency 2}</td>\n      <td data-render=\"setActive\" class=\"center\"></td>\n    </tr>\n  </tbody>\n</table>\n";
 
 /***/ },
-/* 87 */
+/* 85 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var invalid = __webpack_require__(88)
+	var invalid = __webpack_require__(86)
 	var query = __webpack_require__(57)
-	var serialize = __webpack_require__(90)
+	var serialize = __webpack_require__(88)
 	
 	/**
 	 * Init changed by `form` and `format` Object
@@ -9157,10 +8951,10 @@
 
 
 /***/ },
-/* 88 */
+/* 86 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var computedStyle = __webpack_require__(89)
+	var computedStyle = __webpack_require__(87)
 	
 	/**
 	 * Check if element is invalid
@@ -9197,7 +8991,7 @@
 
 
 /***/ },
-/* 89 */
+/* 87 */
 /***/ function(module, exports) {
 
 	// DEV: We don't use var but favor parameters since these play nicer with minification
@@ -9230,7 +9024,7 @@
 
 
 /***/ },
-/* 90 */
+/* 88 */
 /***/ function(module, exports) {
 
 	// get successful control from form and assemble into object
