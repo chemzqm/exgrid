@@ -1,10 +1,9 @@
 # Exgrid
 
-[![NPM version](https://badge.fury.io/js/exgrid.svg)](http://badge.fury.io/js/exgrid)
-[![DOC](https://inch-ci.org/github/chemzqm/exgrid.svg?branch=master)](https://inch-ci.org/github/chemzqm/exgrid.svg?branch=master)
-[![Dependency Status](https://david-dm.org/chemzqm/exgrid.svg)](https://david-dm.org/chemzqm/exgrid)
-[![Build Status](https://secure.travis-ci.org/chemzqm/exgrid.svg)](http://travis-ci.org/chemzqm/exgrid)
-[![Coverage Status](https://coveralls.io/repos/chemzqm/exgrid/badge.svg?branch=master&service=github)](https://coveralls.io/github/chemzqm/exgrid?branch=master)
+[![NPM version](https://img.shields.io/npm/v/exgrid.svg?style=flat-square)](https://www.npmjs.com/package/exgrid)
+[![Dependency Status](https://img.shields.io/david/chemzqm/exgrid.svg?style=flat-square)](https://david-dm.org/chemzqm/exgrid)
+[![Build Status](https://img.shields.io/travis/chemzqm/exgrid/master.svg?style=flat-square)](http://travis-ci.org/chemzqm/exgrid)
+[![Coverage Status](https://img.shields.io/coveralls/chemzqm/exgrid/master.svg?style=flat-square)](https://coveralls.io/github/chemzqm/exgrid?branch=master)
 
 [Try it now](https://chemzqm.github.io/exgrid/)
 
