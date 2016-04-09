@@ -31,7 +31,8 @@
     "spin": "component-spin",
     "notice": "component-notice",
     "query": "component-query",
-    "reactive": "reactive-lite"
+    "reactive": "reactive-lite",
+    "tap-event": "component-tap-event"
   },
   "dependencies": {
     "changed": "0.0.2",
@@ -42,6 +43,7 @@
     "list-render": "^0.1.1"
   },
   "devDependencies": {
+    "component-tap-event": "^1.1.3",
     "component-classes": "^1.2.4",
     "component-notice": "0.0.15",
     "component-pager": "0.0.4",
