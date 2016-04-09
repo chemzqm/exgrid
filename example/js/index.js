@@ -41,16 +41,8 @@ var grid = new Grid(template, {
     }
   },
   delegate: {
-    setActive: function (model, el) {
-      el.innerHTML = ''
-      var cb = document.createElement('input')
-      cb.type = 'checkbox'
-      cb.checked = model.isActive
-      cb.addEventListener('change', function () {
-        // save value to model
-        model.isActive = cb.checked
-      }, false)
-      el.appendChild(cb)
+    toggleActive: function (e, model, el) {
+      model.isActive = el.checked
     }
   }
 })
