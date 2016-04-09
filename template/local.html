@@ -17,7 +17,9 @@
       <td>{score | currency 0}</td>
       <td>{percent | percentage}</td>
       <td react="money" class="money">¥{money | currency 2}</td>
-      <td react="isActive" data-render="setActive" class="center"></td>
+      <td react="isActive" class="center">
+        <input type="checkbox" data-checked="isActive" on-change="toggleActive">
+      </td>
       <td><button class="save" react="$stat">save</button></td>
     </tr>
   </tbody>

@@ -51,12 +51,12 @@
 	var Overlay = __webpack_require__(11)
 	var spin = __webpack_require__(18)
 	var Notice = __webpack_require__(52)
-	var template = __webpack_require__(58)
-	var data = __webpack_require__(59)
-	var Grid = __webpack_require__(60)
-	var Pager = __webpack_require__(78)
+	var template = __webpack_require__(56)
+	var data = __webpack_require__(57)
+	var Grid = __webpack_require__(58)
+	var Pager = __webpack_require__(76)
 	var classes = __webpack_require__(16)
-	__webpack_require__(83)
+	__webpack_require__(79)
 	
 	var el = document.getElementById('tabs')
 	tabify(el)
@@ -87,16 +87,8 @@
 	    }
 	  },
 	  delegate: {
-	    setActive: function (model, el) {
-	      el.innerHTML = ''
-	      var cb = document.createElement('input')
-	      cb.type = 'checkbox'
-	      cb.checked = model.isActive
-	      cb.addEventListener('change', function () {
-	        // save value to model
-	        model.isActive = cb.checked
-	      }, false)
-	      el.appendChild(cb)
+	    toggleActive: function (e, model, el) {
+	      model.isActive = el.checked
 	    }
 	  }
 	})
@@ -266,7 +258,8 @@
 			return document.head || document.getElementsByTagName("head")[0];
 		}),
 		singletonElement = null,
-		singletonCounter = 0;
+		singletonCounter = 0,
+		styleElementsInsertedAtTop = [];
 	
 	module.exports = function(list, options) {
 		if(true) {
@@ -277,6 +270,9 @@
 		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
 		// tags it will allow on a page
 		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+	
+		// By default, add <style> tags to the bottom of <head>.
+		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
 	
 		var styles = listToStyles(list);
 		addStylesToDom(styles, options);
@@ -344,19 +340,44 @@
 		return styles;
 	}
 	
-	function createStyleElement() {
-		var styleElement = document.createElement("style");
+	function insertStyleElement(options, styleElement) {
 		var head = getHeadElement();
+		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+		if (options.insertAt === "top") {
+			if(!lastStyleElementInsertedAtTop) {
+				head.insertBefore(styleElement, head.firstChild);
+			} else if(lastStyleElementInsertedAtTop.nextSibling) {
+				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+			} else {
+				head.appendChild(styleElement);
+			}
+			styleElementsInsertedAtTop.push(styleElement);
+		} else if (options.insertAt === "bottom") {
+			head.appendChild(styleElement);
+		} else {
+			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+		}
+	}
+	
+	function removeStyleElement(styleElement) {
+		styleElement.parentNode.removeChild(styleElement);
+		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+		if(idx >= 0) {
+			styleElementsInsertedAtTop.splice(idx, 1);
+		}
+	}
+	
+	function createStyleElement(options) {
+		var styleElement = document.createElement("style");
 		styleElement.type = "text/css";
-		head.appendChild(styleElement);
+		insertStyleElement(options, styleElement);
 		return styleElement;
 	}
 	
-	function createLinkElement() {
+	function createLinkElement(options) {
 		var linkElement = document.createElement("link");
-		var head = getHeadElement();
 		linkElement.rel = "stylesheet";
-		head.appendChild(linkElement);
+		insertStyleElement(options, linkElement);
 		return linkElement;
 	}
 	
@@ -365,7 +386,7 @@
 	
 		if (options.singleton) {
 			var styleIndex = singletonCounter++;
-			styleElement = singletonElement || (singletonElement = createStyleElement());
+			styleElement = singletonElement || (singletonElement = createStyleElement(options));
 			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
 			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
 		} else if(obj.sourceMap &&
@@ -374,18 +395,18 @@
 			typeof URL.revokeObjectURL === "function" &&
 			typeof Blob === "function" &&
 			typeof btoa === "function") {
-			styleElement = createLinkElement();
+			styleElement = createLinkElement(options);
 			update = updateLink.bind(null, styleElement);
 			remove = function() {
-				styleElement.parentNode.removeChild(styleElement);
+				removeStyleElement(styleElement);
 				if(styleElement.href)
 					URL.revokeObjectURL(styleElement.href);
 			};
 		} else {
-			styleElement = createStyleElement();
+			styleElement = createStyleElement(options);
 			update = applyToTag.bind(null, styleElement);
 			remove = function() {
-				styleElement.parentNode.removeChild(styleElement);
+				removeStyleElement(styleElement);
 			};
 		}
 	
@@ -503,7 +524,7 @@
 	
 	
 	// module
-	exports.push([module.id, ".notice-container {\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  z-index: 999999;\n}\n.notice-container .notice-item {\n  position: relative;\n  font: 500 16px/1.8 \"Georgia\",\"Xin Gothic\",\"Hiragino Sans GB\",\"WenQuanYi Micro Hei\",sans-serif;\n  background: #fefefe;\n  background: rgba(255,255,255,0.9);\n  color: #565656;\n  padding: 10px 20px;\n  box-sizing: border-box;\n  border-bottom: 1px solid #efefef;\n  text-align: center;\n  transition: all .2s ease-in-out;\n  transform-origin: top;\n}\n/* colors from bootstrap */\n.notice-container .notice-warning {\n  background: #fcf8e3;\n  background: rgba(252, 248, 227, 0.9);\n  border-color: #fbeed5;\n  color: #c09853;\n}\n\n.notice-container .notice-success {\n  background: #EAFBE3;\n  background: rgba(221, 242, 210, 0.9);\n  border-color: #D6E9C6;\n  color: #3FB16F;\n}\n\n.notice-container .notice-danger,\n.notice-container .notice-error {\n  background: #f2dede;\n  background: rgba(242, 222, 222, 0.9);\n  border-color: #ebccd1;\n  color: #a94442;\n}\n\n.notice-container .notice-content {\n  color: inherit;\n  text-decoration: none;\n  margin: 0 auto;\n  max-width: 650px;\n}\n.notice-container .notice-close {\n  position: absolute;\n  top: 5px;\n  height: 40px;\n  right: 20px;\n  width: 40px;\n  cursor: pointer;\n  font: 400 normal 22px/40px \"Arial\", sans-serif;\n  color: rgba(231, 76, 60, 0.6);\n}\n.notice-container .notice-dismiss {\n  transform: rotateX(-75deg);\n  opacity: 0;\n}\n", ""]);
+	exports.push([module.id, ".notice-container {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100%;\n  z-index: 999999;\n}\n.notice-container .notice-item {\n  position: relative;\n  font: 500 16px/1.8 \"Georgia\",\"Xin Gothic\",\"Hiragino Sans GB\",\"WenQuanYi Micro Hei\",sans-serif;\n  background: #fefefe;\n  background: rgba(255,255,255,0.9);\n  color: #565656;\n  padding: 10px 20px;\n  box-sizing: border-box;\n  border-bottom: 1px solid #efefef;\n  text-align: center;\n  transition: all .2s ease-in-out;\n  transform-origin: top;\n}\n/* colors from bootstrap */\n.notice-container .notice-warning {\n  background: #fcf8e3;\n  background: rgba(252, 248, 227, 0.9);\n  border-color: #fbeed5;\n  color: #c09853;\n}\n\n.notice-container .notice-success {\n  background: #EAFBE3;\n  background: rgba(221, 242, 210, 0.9);\n  border-color: #D6E9C6;\n  color: #3FB16F;\n}\n\n.notice-container .notice-danger,\n.notice-container .notice-error {\n  background: #f2dede;\n  background: rgba(242, 222, 222, 0.9);\n  border-color: #ebccd1;\n  color: #a94442;\n}\n\n.notice-container .notice-content {\n  color: inherit;\n  text-decoration: none;\n  margin: 0 auto;\n  max-width: 650px;\n}\n.notice-container .notice-close {\n  position: absolute;\n  top: 5px;\n  height: 40px;\n  right: 20px;\n  width: 40px;\n  cursor: pointer;\n  font: 400 normal 22px/40px \"Arial\", sans-serif;\n  color: rgba(231, 76, 60, 0.6);\n}\n.notice-container .notice-dismiss {\n  transform: rotateX(-75deg);\n  opacity: 0;\n}\n", ""]);
 	
 	// exports
 
@@ -4571,422 +4592,112 @@
 	 *
 	 */
 	
-	var classes = __webpack_require__(16);
-	var events = __webpack_require__(53);
+	var classes = __webpack_require__(16)
+	var events = __webpack_require__(15)
+	var query = __webpack_require__(53)
+	var tap = __webpack_require__(54)
 	
-	//var hasTouch = 'ontouchend' in window;
-	var zIndex = 999;
+	var hasTouch = 'ontouchend' in window
+	var zIndex = 999
 	
 	function create(o) {
-	  var el = document.createElement(o.tag || 'div');
-	  el.className = o.className;
-	  el.innerHTML = o.html || '';
-	  if (o.parent) o.parent.appendChild(el);
-	  return el;
+	  var el = document.createElement(o.tag || 'div')
+	  el.className = o.className
+	  el.innerHTML = o.html || ''
+	  if (o.parent) o.parent.appendChild(el)
+	  return el
 	}
-	var container;
+	var container
 	
 	function Notice(msg, options) {
-	  if (! (this instanceof Notice)) return new Notice(msg, options);
-	  options = options || {};
+	  if (! (this instanceof Notice)) return new Notice(msg, options)
+	  options = options || {}
 	  if (!container) {
 	    container = create({
 	      className: 'notice-container',
 	      parent: options.parent || document.body
 	    })
 	  }
-	  if (options.type == 'success') options.duration = options.duration || 2000;
-	  var closable = options.hasOwnProperty('closable')? options.closable : true;
-	  var duration = options.duration;
-	  if (!closable && duration == null) duration = 2000;
-	  options.message = msg;
-	  var el = createElement(options, closable);
-	  el.style.zIndex = -- zIndex;
-	  this.el = el;
-	  container.appendChild(this.el);
-	  this.events = events(el, this);
-	  //this.events.bind('tap .notice-close', 'hide');
-	  this.events.bind('click .notice-close', 'hide');
+	  if (options.type == 'success') options.duration = options.duration || 2000
+	  var closable = options.hasOwnProperty('closable')? options.closable : true
+	  var duration = options.duration
+	  if (!closable && duration == null) duration = 2000
+	  options.message = msg
+	  var el = createElement(options, closable)
+	  el.style.zIndex = -- zIndex
+	  this.el = el
+	  container.appendChild(this.el)
+	  this.closeEl = query('.notice-close', el)
+	  this._hideFn = this.hide.bind(this)
+	  if (hasTouch) {
+	    this._tap = tap(this.closeEl, this._hideFn)
+	  } else {
+	    events.bind(this.closeEl, 'click', this._hideFn)
+	  }
 	  if (duration) {
-	    setTimeout(this.hide.bind(this), duration);
+	    setTimeout(this.hide.bind(this), duration)
 	  }
 	}
 	
 	Notice.prototype.hide = function(e) {
 	  if (e) {
-	    e.preventDefault();
-	    e.stopPropagation();
+	    e.preventDefault()
+	    e.stopPropagation()
 	  }
-	  if (this._hide) return;
-	  this._hide = true;
-	  var self = this;
-	  this.events.unbind();
-	  dismiss(this.el);
+	  if (this._hide) return
+	  this._hide = true
+	  var self = this
+	  if (this._tap) {
+	    this._tap.unbind()
+	  } else {
+	    events.bind(this.closeEl, 'click', this._hideFn)
+	  }
+	  dismiss(this.el)
 	}
 	
 	Notice.prototype.clear = function () {
-	  var el = this.el;
+	  var el = this.el
 	  if (el && el.parentNode) {
-	    el.parentNode.removeChild(el);
+	    el.parentNode.removeChild(el)
 	  }
 	}
 	
 	function createElement(options, closable) {
 	  var className = 'notice-item' + (options.type
 	    ? ' notice-' + options.type
-	    : '');
-	  var item = create({className: className});
+	    : '')
+	  var item = create({className: className})
 	  create({
 	    className: 'notice-content',
 	    html: options.message,
 	    parent: item
-	  });
+	  })
 	
 	  if (closable) {
 	    var close = create({
 	      className : 'notice-close',
 	      html: '×',
 	      parent: item
-	    });
+	    })
 	  }
 	
-	  return item;
+	  return item
 	}
 	
 	function dismiss(el) {
-	  classes(el).add('notice-dismiss');
+	  classes(el).add('notice-dismiss')
 	  setTimeout(function() {
 	    if (el && el.parentNode) {
-	      el.parentNode.removeChild(el);
+	      el.parentNode.removeChild(el)
 	    }
-	  }, 200);
+	  }, 200)
 	}
 	
-	module.exports = Notice;
+	module.exports = Notice
 
 
 /***/ },
 /* 53 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	/**
-	 * Module dependencies.
-	 */
-	
-	var events = __webpack_require__(15);
-	var delegate = __webpack_require__(54);
-	
-	/**
-	 * Expose `Events`.
-	 */
-	
-	module.exports = Events;
-	
-	/**
-	 * Initialize an `Events` with the given
-	 * `el` object which events will be bound to,
-	 * and the `obj` which will receive method calls.
-	 *
-	 * @param {Object} el
-	 * @param {Object} obj
-	 * @api public
-	 */
-	
-	function Events(el, obj) {
-	  if (!(this instanceof Events)) return new Events(el, obj);
-	  if (!el) throw new Error('element required');
-	  if (!obj) throw new Error('object required');
-	  this.el = el;
-	  this.obj = obj;
-	  this._events = {};
-	}
-	
-	/**
-	 * Subscription helper.
-	 */
-	
-	Events.prototype.sub = function(event, method, cb){
-	  this._events[event] = this._events[event] || {};
-	  this._events[event][method] = cb;
-	};
-	
-	/**
-	 * Bind to `event` with optional `method` name.
-	 * When `method` is undefined it becomes `event`
-	 * with the "on" prefix.
-	 *
-	 * Examples:
-	 *
-	 *  Direct event handling:
-	 *
-	 *    events.bind('click') // implies "onclick"
-	 *    events.bind('click', 'remove')
-	 *    events.bind('click', 'sort', 'asc')
-	 *
-	 *  Delegated event handling:
-	 *
-	 *    events.bind('click li > a')
-	 *    events.bind('click li > a', 'remove')
-	 *    events.bind('click a.sort-ascending', 'sort', 'asc')
-	 *    events.bind('click a.sort-descending', 'sort', 'desc')
-	 *
-	 * @param {String} event
-	 * @param {String|function} [method]
-	 * @return {Function} callback
-	 * @api public
-	 */
-	
-	Events.prototype.bind = function(event, method){
-	  var e = parse(event);
-	  var el = this.el;
-	  var obj = this.obj;
-	  var name = e.name;
-	  var method = method || 'on' + name;
-	  var args = [].slice.call(arguments, 2);
-	
-	  // callback
-	  function cb(){
-	    var a = [].slice.call(arguments).concat(args);
-	    obj[method].apply(obj, a);
-	  }
-	
-	  // bind
-	  if (e.selector) {
-	    cb = delegate.bind(el, e.selector, name, cb);
-	  } else {
-	    events.bind(el, name, cb);
-	  }
-	
-	  // subscription for unbinding
-	  this.sub(name, method, cb);
-	
-	  return cb;
-	};
-	
-	/**
-	 * Unbind a single binding, all bindings for `event`,
-	 * or all bindings within the manager.
-	 *
-	 * Examples:
-	 *
-	 *  Unbind direct handlers:
-	 *
-	 *     events.unbind('click', 'remove')
-	 *     events.unbind('click')
-	 *     events.unbind()
-	 *
-	 * Unbind delegate handlers:
-	 *
-	 *     events.unbind('click', 'remove')
-	 *     events.unbind('click')
-	 *     events.unbind()
-	 *
-	 * @param {String|Function} [event]
-	 * @param {String|Function} [method]
-	 * @api public
-	 */
-	
-	Events.prototype.unbind = function(event, method){
-	  if (0 == arguments.length) return this.unbindAll();
-	  if (1 == arguments.length) return this.unbindAllOf(event);
-	
-	  // no bindings for this event
-	  var bindings = this._events[event];
-	  if (!bindings) return;
-	
-	  // no bindings for this method
-	  var cb = bindings[method];
-	  if (!cb) return;
-	
-	  events.unbind(this.el, event, cb);
-	};
-	
-	/**
-	 * Unbind all events.
-	 *
-	 * @api private
-	 */
-	
-	Events.prototype.unbindAll = function(){
-	  for (var event in this._events) {
-	    this.unbindAllOf(event);
-	  }
-	};
-	
-	/**
-	 * Unbind all events for `event`.
-	 *
-	 * @param {String} event
-	 * @api private
-	 */
-	
-	Events.prototype.unbindAllOf = function(event){
-	  var bindings = this._events[event];
-	  if (!bindings) return;
-	
-	  for (var method in bindings) {
-	    this.unbind(event, method);
-	  }
-	};
-	
-	/**
-	 * Parse `event`.
-	 *
-	 * @param {String} event
-	 * @return {Object}
-	 * @api private
-	 */
-	
-	function parse(event) {
-	  var parts = event.split(/ +/);
-	  return {
-	    name: parts.shift(),
-	    selector: parts.join(' ')
-	  }
-	}
-
-
-/***/ },
-/* 54 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Module dependencies.
-	 */
-	
-	var closest = __webpack_require__(55)
-	  , event = __webpack_require__(15);
-	
-	/**
-	 * Delegate event `type` to `selector`
-	 * and invoke `fn(e)`. A callback function
-	 * is returned which may be passed to `.unbind()`.
-	 *
-	 * @param {Element} el
-	 * @param {String} selector
-	 * @param {String} type
-	 * @param {Function} fn
-	 * @param {Boolean} capture
-	 * @return {Function}
-	 * @api public
-	 */
-	
-	exports.bind = function(el, selector, type, fn, capture){
-	  return event.bind(el, type, function(e){
-	    var target = e.target || e.srcElement;
-	    e.delegateTarget = closest(target, selector, true, el);
-	    if (e.delegateTarget) fn.call(el, e);
-	  }, capture);
-	};
-	
-	/**
-	 * Unbind event `type`'s callback `fn`.
-	 *
-	 * @param {Element} el
-	 * @param {String} type
-	 * @param {Function} fn
-	 * @param {Boolean} capture
-	 * @api public
-	 */
-	
-	exports.unbind = function(el, type, fn, capture){
-	  event.unbind(el, type, fn, capture);
-	};
-
-
-/***/ },
-/* 55 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Module Dependencies
-	 */
-	
-	var matches = __webpack_require__(56)
-	
-	/**
-	 * Export `closest`
-	 */
-	
-	module.exports = closest
-	
-	/**
-	 * Closest
-	 *
-	 * @param {Element} el
-	 * @param {String} selector
-	 * @param {Element} scope (optional)
-	 */
-	
-	function closest (el, selector, scope) {
-	  scope = scope || document.documentElement;
-	
-	  // walk up the dom
-	  while (el && el !== scope) {
-	    if (matches(el, selector)) return el;
-	    el = el.parentNode;
-	  }
-	
-	  // check scope for match
-	  return matches(el, selector) ? el : null;
-	}
-
-
-/***/ },
-/* 56 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Module dependencies.
-	 */
-	
-	var query = __webpack_require__(57);
-	
-	/**
-	 * Element prototype.
-	 */
-	
-	var proto = Element.prototype;
-	
-	/**
-	 * Vendor function.
-	 */
-	
-	var vendor = proto.matches
-	  || proto.webkitMatchesSelector
-	  || proto.mozMatchesSelector
-	  || proto.msMatchesSelector
-	  || proto.oMatchesSelector;
-	
-	/**
-	 * Expose `match()`.
-	 */
-	
-	module.exports = match;
-	
-	/**
-	 * Match `el` to `selector`.
-	 *
-	 * @param {Element} el
-	 * @param {String} selector
-	 * @return {Boolean}
-	 * @api public
-	 */
-	
-	function match(el, selector) {
-	  if (!el || el.nodeType !== 1) return false;
-	  if (vendor) return vendor.call(el, selector);
-	  var nodes = query.all(selector, el.parentNode);
-	  for (var i = 0; i < nodes.length; ++i) {
-	    if (nodes[i] == el) return true;
-	  }
-	  return false;
-	}
-
-
-/***/ },
-/* 57 */
 /***/ function(module, exports) {
 
 	function one(selector, el) {
@@ -5013,13 +4724,133 @@
 
 
 /***/ },
-/* 58 */
-/***/ function(module, exports) {
+/* 54 */
+/***/ function(module, exports, __webpack_require__) {
 
-	module.exports = "<table>\n  <thead>\n    <tr>\n      <th class=\"sort\" data-sort=\"name\">name</th>\n      <th class=\"sort\" data-sort=\"age\">age</th>\n      <th class=\"sort\" data-sort=\"score\">score</th>\n      <th class=\"sort\" data-sort=\"percent\">percentage</th>\n      <th class=\"sort\" data-sort=\"money\">money</th>\n      <th>active</th>\n      <th>action</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td class=\"left\">{name}</td>\n      <td>{age}</td>\n      <td>{score | currency 0}</td>\n      <td>{percent | percentage}</td>\n      <td react=\"money\" class=\"money\">¥{money | currency 2}</td>\n      <td react=\"isActive\" data-render=\"setActive\" class=\"center\"></td>\n      <td><button class=\"save\" react=\"$stat\">save</button></td>\n    </tr>\n  </tbody>\n</table>\n";
+	/**
+	 * Module Dependencies
+	 */
+	
+	var event = __webpack_require__(15),
+	    bind = __webpack_require__(55);
+	
+	/**
+	 * Expose `Tap`
+	 */
+	
+	module.exports = Tap;
+	
+	/**
+	 * Touch support
+	 */
+	
+	var support = 'ontouchstart' in window;
+	
+	/**
+	 * Tap on `el` to trigger a `fn`
+	 *
+	 * Tap will not fire if you move your finger
+	 * to scroll
+	 *
+	 * @param {Element} el
+	 * @param {Function} fn
+	 */
+	
+	function Tap(el, fn) {
+	  if(!(this instanceof Tap)) return new Tap(el, fn);
+	  this.el = el;
+	  this.fn = fn || function() {};
+	  this.tap = true;
+	
+	  if (support) {
+	    this.ontouchmove = bind(this, this.touchmove);
+	    this.ontouchend = bind(this, this.touchend);
+	    event.bind(el, 'touchmove', this.ontouchmove);
+	    event.bind(el, 'touchend', this.ontouchend);
+	  } else {
+	    event.bind(el, 'click', this.fn);
+	  }
+	}
+	
+	/**
+	 * Touch end
+	 *
+	 * @param {Event} e
+	 * @return {Tap}
+	 * @api private
+	 */
+	
+	Tap.prototype.touchend = function(e) {
+	  if (this.tap) this.fn(e);
+	  this.tap = true;
+	  event.bind(this.el, 'touchmove', this.ontouchmove);
+	  return this;
+	};
+	
+	/**
+	 * Touch move
+	 *
+	 * @return {Tap}
+	 * @api private
+	 */
+	
+	Tap.prototype.touchmove = function() {
+	  this.tap = false;
+	  event.unbind(this.el, 'touchmove', this.ontouchmove);
+	  return this;
+	};
+	
+	/**
+	 * Unbind the tap
+	 *
+	 * @return {Tap}
+	 * @api public
+	 */
+	
+	Tap.prototype.unbind = function() {
+	  event.unbind(this.el, 'touchend', this.ontouchend);
+	  event.unbind(this.el, 'click', this.fn);
+	  return this;
+	};
+
 
 /***/ },
-/* 59 */
+/* 55 */
+/***/ function(module, exports) {
+
+	/**
+	 * Slice reference.
+	 */
+	
+	var slice = [].slice;
+	
+	/**
+	 * Bind `obj` to `fn`.
+	 *
+	 * @param {Object} obj
+	 * @param {Function|String} fn or string
+	 * @return {Function}
+	 * @api public
+	 */
+	
+	module.exports = function(obj, fn){
+	  if ('string' == typeof fn) fn = obj[fn];
+	  if ('function' != typeof fn) throw new Error('bind() requires a function');
+	  var args = slice.call(arguments, 2);
+	  return function(){
+	    return fn.apply(obj, args.concat(slice.call(arguments)));
+	  }
+	};
+
+
+/***/ },
+/* 56 */
+/***/ function(module, exports) {
+
+	module.exports = "<table>\n  <thead>\n    <tr>\n      <th class=\"sort\" data-sort=\"name\">name</th>\n      <th class=\"sort\" data-sort=\"age\">age</th>\n      <th class=\"sort\" data-sort=\"score\">score</th>\n      <th class=\"sort\" data-sort=\"percent\">percentage</th>\n      <th class=\"sort\" data-sort=\"money\">money</th>\n      <th>active</th>\n      <th>action</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td class=\"left\">{name}</td>\n      <td>{age}</td>\n      <td>{score | currency 0}</td>\n      <td>{percent | percentage}</td>\n      <td react=\"money\" class=\"money\">¥{money | currency 2}</td>\n      <td react=\"isActive\" class=\"center\">\n        <input type=\"checkbox\" data-checked=\"isActive\" on-change=\"toggleActive\">\n      </td>\n      <td><button class=\"save\" react=\"$stat\">save</button></td>\n    </tr>\n  </tbody>\n</table>\n";
+
+/***/ },
+/* 57 */
 /***/ function(module, exports) {
 
 	module.exports = [
@@ -5368,14 +5199,14 @@
 	];
 
 /***/ },
-/* 60 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var inherits = __webpack_require__(61)
-	var events = __webpack_require__(53)
+	var inherits = __webpack_require__(59)
+	var events = __webpack_require__(60)
 	var Emitter = __webpack_require__(10)
-	var ListRender = __webpack_require__(62)
-	var domify = __webpack_require__(77)
+	var ListRender = __webpack_require__(64)
+	var domify = __webpack_require__(71)
 	var classes = __webpack_require__(16)
 	
 	/**
@@ -5605,7 +5436,7 @@
 
 
 /***/ },
-/* 61 */
+/* 59 */
 /***/ function(module, exports) {
 
 	if (typeof Object.create === 'function') {
@@ -5634,13 +5465,333 @@
 
 
 /***/ },
+/* 60 */
+/***/ function(module, exports, __webpack_require__) {
+
+	
+	/**
+	 * Module dependencies.
+	 */
+	
+	var events = __webpack_require__(15);
+	var delegate = __webpack_require__(61);
+	
+	/**
+	 * Expose `Events`.
+	 */
+	
+	module.exports = Events;
+	
+	/**
+	 * Initialize an `Events` with the given
+	 * `el` object which events will be bound to,
+	 * and the `obj` which will receive method calls.
+	 *
+	 * @param {Object} el
+	 * @param {Object} obj
+	 * @api public
+	 */
+	
+	function Events(el, obj) {
+	  if (!(this instanceof Events)) return new Events(el, obj);
+	  if (!el) throw new Error('element required');
+	  if (!obj) throw new Error('object required');
+	  this.el = el;
+	  this.obj = obj;
+	  this._events = {};
+	}
+	
+	/**
+	 * Subscription helper.
+	 */
+	
+	Events.prototype.sub = function(event, method, cb){
+	  this._events[event] = this._events[event] || {};
+	  this._events[event][method] = cb;
+	};
+	
+	/**
+	 * Bind to `event` with optional `method` name.
+	 * When `method` is undefined it becomes `event`
+	 * with the "on" prefix.
+	 *
+	 * Examples:
+	 *
+	 *  Direct event handling:
+	 *
+	 *    events.bind('click') // implies "onclick"
+	 *    events.bind('click', 'remove')
+	 *    events.bind('click', 'sort', 'asc')
+	 *
+	 *  Delegated event handling:
+	 *
+	 *    events.bind('click li > a')
+	 *    events.bind('click li > a', 'remove')
+	 *    events.bind('click a.sort-ascending', 'sort', 'asc')
+	 *    events.bind('click a.sort-descending', 'sort', 'desc')
+	 *
+	 * @param {String} event
+	 * @param {String|function} [method]
+	 * @return {Function} callback
+	 * @api public
+	 */
+	
+	Events.prototype.bind = function(event, method){
+	  var e = parse(event);
+	  var el = this.el;
+	  var obj = this.obj;
+	  var name = e.name;
+	  var method = method || 'on' + name;
+	  var args = [].slice.call(arguments, 2);
+	
+	  // callback
+	  function cb(){
+	    var a = [].slice.call(arguments).concat(args);
+	    obj[method].apply(obj, a);
+	  }
+	
+	  // bind
+	  if (e.selector) {
+	    cb = delegate.bind(el, e.selector, name, cb);
+	  } else {
+	    events.bind(el, name, cb);
+	  }
+	
+	  // subscription for unbinding
+	  this.sub(name, method, cb);
+	
+	  return cb;
+	};
+	
+	/**
+	 * Unbind a single binding, all bindings for `event`,
+	 * or all bindings within the manager.
+	 *
+	 * Examples:
+	 *
+	 *  Unbind direct handlers:
+	 *
+	 *     events.unbind('click', 'remove')
+	 *     events.unbind('click')
+	 *     events.unbind()
+	 *
+	 * Unbind delegate handlers:
+	 *
+	 *     events.unbind('click', 'remove')
+	 *     events.unbind('click')
+	 *     events.unbind()
+	 *
+	 * @param {String|Function} [event]
+	 * @param {String|Function} [method]
+	 * @api public
+	 */
+	
+	Events.prototype.unbind = function(event, method){
+	  if (0 == arguments.length) return this.unbindAll();
+	  if (1 == arguments.length) return this.unbindAllOf(event);
+	
+	  // no bindings for this event
+	  var bindings = this._events[event];
+	  if (!bindings) return;
+	
+	  // no bindings for this method
+	  var cb = bindings[method];
+	  if (!cb) return;
+	
+	  events.unbind(this.el, event, cb);
+	};
+	
+	/**
+	 * Unbind all events.
+	 *
+	 * @api private
+	 */
+	
+	Events.prototype.unbindAll = function(){
+	  for (var event in this._events) {
+	    this.unbindAllOf(event);
+	  }
+	};
+	
+	/**
+	 * Unbind all events for `event`.
+	 *
+	 * @param {String} event
+	 * @api private
+	 */
+	
+	Events.prototype.unbindAllOf = function(event){
+	  var bindings = this._events[event];
+	  if (!bindings) return;
+	
+	  for (var method in bindings) {
+	    this.unbind(event, method);
+	  }
+	};
+	
+	/**
+	 * Parse `event`.
+	 *
+	 * @param {String} event
+	 * @return {Object}
+	 * @api private
+	 */
+	
+	function parse(event) {
+	  var parts = event.split(/ +/);
+	  return {
+	    name: parts.shift(),
+	    selector: parts.join(' ')
+	  }
+	}
+
+
+/***/ },
+/* 61 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Module dependencies.
+	 */
+	
+	var closest = __webpack_require__(62)
+	  , event = __webpack_require__(15);
+	
+	/**
+	 * Delegate event `type` to `selector`
+	 * and invoke `fn(e)`. A callback function
+	 * is returned which may be passed to `.unbind()`.
+	 *
+	 * @param {Element} el
+	 * @param {String} selector
+	 * @param {String} type
+	 * @param {Function} fn
+	 * @param {Boolean} capture
+	 * @return {Function}
+	 * @api public
+	 */
+	
+	exports.bind = function(el, selector, type, fn, capture){
+	  return event.bind(el, type, function(e){
+	    var target = e.target || e.srcElement;
+	    e.delegateTarget = closest(target, selector, true, el);
+	    if (e.delegateTarget) fn.call(el, e);
+	  }, capture);
+	};
+	
+	/**
+	 * Unbind event `type`'s callback `fn`.
+	 *
+	 * @param {Element} el
+	 * @param {String} type
+	 * @param {Function} fn
+	 * @param {Boolean} capture
+	 * @api public
+	 */
+	
+	exports.unbind = function(el, type, fn, capture){
+	  event.unbind(el, type, fn, capture);
+	};
+
+
+/***/ },
 /* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Model = __webpack_require__(63)
-	var Reactive = __webpack_require__(67)
-	var domify = __webpack_require__(75)
-	var uid = __webpack_require__(76)
+	/**
+	 * Module Dependencies
+	 */
+	
+	var matches = __webpack_require__(63)
+	
+	/**
+	 * Export `closest`
+	 */
+	
+	module.exports = closest
+	
+	/**
+	 * Closest
+	 *
+	 * @param {Element} el
+	 * @param {String} selector
+	 * @param {Element} scope (optional)
+	 */
+	
+	function closest (el, selector, scope) {
+	  scope = scope || document.documentElement;
+	
+	  // walk up the dom
+	  while (el && el !== scope) {
+	    if (matches(el, selector)) return el;
+	    el = el.parentNode;
+	  }
+	
+	  // check scope for match
+	  return matches(el, selector) ? el : null;
+	}
+
+
+/***/ },
+/* 63 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Module dependencies.
+	 */
+	
+	var query = __webpack_require__(53);
+	
+	/**
+	 * Element prototype.
+	 */
+	
+	var proto = Element.prototype;
+	
+	/**
+	 * Vendor function.
+	 */
+	
+	var vendor = proto.matches
+	  || proto.webkitMatchesSelector
+	  || proto.mozMatchesSelector
+	  || proto.msMatchesSelector
+	  || proto.oMatchesSelector;
+	
+	/**
+	 * Expose `match()`.
+	 */
+	
+	module.exports = match;
+	
+	/**
+	 * Match `el` to `selector`.
+	 *
+	 * @param {Element} el
+	 * @param {String} selector
+	 * @return {Boolean}
+	 * @api public
+	 */
+	
+	function match(el, selector) {
+	  if (!el || el.nodeType !== 1) return false;
+	  if (vendor) return vendor.call(el, selector);
+	  var nodes = query.all(selector, el.parentNode);
+	  for (var i = 0; i < nodes.length; ++i) {
+	    if (nodes[i] == el) return true;
+	  }
+	  return false;
+	}
+
+
+/***/ },
+/* 64 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var Model = __webpack_require__(65)
+	var Reactive = __webpack_require__(68)
+	var domify = __webpack_require__(71)
+	var uid = __webpack_require__(75)
 	var body = document.body
 	
 	/**
@@ -5938,8 +6089,7 @@
 	    var clz = this.model = createModelClass(Object.keys(obj))
 	    model = clz(obj)
 	  }
-	  this.primaryKey = obj.hasOwnProperty('id') ? 'id' :
-	                    obj.hasOwnProperty('_id') ? '_id': null
+	  this.primaryKey = obj.hasOwnProperty('id') ? 'id' : '_id'
 	  var opt = {
 	    delegate: this.delegate,
 	    bindings: this.bindings,
@@ -5990,12 +6140,10 @@
 	ListRender.prototype.createReactive = function (obj) {
 	  var el = this.template.cloneNode(true)
 	  var model = this.model(obj)
-	  var id
-	  if (this.primaryKey == null) {
-	    this.primaryKey = '_id'
-	    id = obj[this.primaryKey] = uid(10)
-	  } else {
-	    id = obj[this.primaryKey]
+	  var id = obj[this.primaryKey || '_id']
+	  if (!id) {
+	    id = uid(10)
+	    obj[this.primaryKey] = id
 	  }
 	  var opt = {
 	    delegate: this.delegate,
@@ -6151,7 +6299,7 @@
 
 
 /***/ },
-/* 63 */
+/* 65 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -6159,8 +6307,8 @@
 	 * Module dependencies.
 	 */
 	
-	var proto = __webpack_require__(64)
-	var util = __webpack_require__(66)
+	var proto = __webpack_require__(66)
+	var util = __webpack_require__(67)
 	var buildinRe = /^(\$stat|changed|emit|clean|on|off|attrs)$/
 	
 	/**
@@ -6283,7 +6431,7 @@
 
 
 /***/ },
-/* 64 */
+/* 66 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -6291,8 +6439,8 @@
 	 * Module dependencies.
 	 */
 	
-	var Emitter = __webpack_require__(65)
-	var util = __webpack_require__(66)
+	var Emitter = __webpack_require__(10)
+	var util = __webpack_require__(67)
 	
 	/**
 	 * Mixin emitter.
@@ -6375,174 +6523,7 @@
 
 
 /***/ },
-/* 65 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Expose `Emitter`.
-	 */
-	
-	module.exports = Emitter;
-	
-	/**
-	 * Initialize a new `Emitter`.
-	 *
-	 * @api public
-	 */
-	
-	function Emitter(obj) {
-	  if (obj) return mixin(obj);
-	};
-	
-	/**
-	 * Mixin the emitter properties.
-	 *
-	 * @param {Object} obj
-	 * @return {Object}
-	 * @api private
-	 */
-	
-	function mixin(obj) {
-	  for (var key in Emitter.prototype) {
-	    obj[key] = Emitter.prototype[key];
-	  }
-	  return obj;
-	}
-	
-	/**
-	 * Listen on the given `event` with `fn`.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-	
-	Emitter.prototype.on =
-	Emitter.prototype.addEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-	  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
-	    .push(fn);
-	  return this;
-	};
-	
-	/**
-	 * Adds an `event` listener that will be invoked a single
-	 * time then automatically removed.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-	
-	Emitter.prototype.once = function(event, fn){
-	  function on() {
-	    this.off(event, on);
-	    fn.apply(this, arguments);
-	  }
-	
-	  on.fn = fn;
-	  this.on(event, on);
-	  return this;
-	};
-	
-	/**
-	 * Remove the given callback for `event` or all
-	 * registered callbacks.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-	
-	Emitter.prototype.off =
-	Emitter.prototype.removeListener =
-	Emitter.prototype.removeAllListeners =
-	Emitter.prototype.removeEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-	
-	  // all
-	  if (0 == arguments.length) {
-	    this._callbacks = {};
-	    return this;
-	  }
-	
-	  // specific event
-	  var callbacks = this._callbacks['$' + event];
-	  if (!callbacks) return this;
-	
-	  // remove all handlers
-	  if (1 == arguments.length) {
-	    delete this._callbacks['$' + event];
-	    return this;
-	  }
-	
-	  // remove specific handler
-	  var cb;
-	  for (var i = 0; i < callbacks.length; i++) {
-	    cb = callbacks[i];
-	    if (cb === fn || cb.fn === fn) {
-	      callbacks.splice(i, 1);
-	      break;
-	    }
-	  }
-	  return this;
-	};
-	
-	/**
-	 * Emit `event` with the given args.
-	 *
-	 * @param {String} event
-	 * @param {Mixed} ...
-	 * @return {Emitter}
-	 */
-	
-	Emitter.prototype.emit = function(event){
-	  this._callbacks = this._callbacks || {};
-	  var args = [].slice.call(arguments, 1)
-	    , callbacks = this._callbacks['$' + event];
-	
-	  if (callbacks) {
-	    callbacks = callbacks.slice(0);
-	    for (var i = 0, len = callbacks.length; i < len; ++i) {
-	      callbacks[i].apply(this, args);
-	    }
-	  }
-	
-	  return this;
-	};
-	
-	/**
-	 * Return array of callbacks for `event`.
-	 *
-	 * @param {String} event
-	 * @return {Array}
-	 * @api public
-	 */
-	
-	Emitter.prototype.listeners = function(event){
-	  this._callbacks = this._callbacks || {};
-	  return this._callbacks['$' + event] || [];
-	};
-	
-	/**
-	 * Check if this emitter has `event` handlers.
-	 *
-	 * @param {String} event
-	 * @return {Boolean}
-	 * @api public
-	 */
-	
-	Emitter.prototype.hasListeners = function(event){
-	  return !! this.listeners(event).length;
-	};
-
-
-/***/ },
-/* 66 */
+/* 67 */
 /***/ function(module, exports) {
 
 	/**
@@ -6581,15 +6562,16 @@
 
 
 /***/ },
-/* 67 */
+/* 68 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(68)
-	var domify = __webpack_require__(70)
-	var Binding = __webpack_require__(71)
-	var bindings = __webpack_require__(72)
-	var Emitter = __webpack_require__(73)
+	var util = __webpack_require__(69)
+	var domify = __webpack_require__(71)
+	var Binding = __webpack_require__(72)
+	var bindings = __webpack_require__(73)
+	var Emitter = __webpack_require__(10)
 	var filters = __webpack_require__(74)
+	var event = __webpack_require__(15)
 	
 	/**
 	 * Reactive
@@ -6613,6 +6595,7 @@
 	  this.delegate = option.delegate || {}
 	  this.model = model
 	  this.el = el
+	  this.events = []
 	  if (option.nobind) return
 	  var config = option.config
 	  this.config = config ? config : this.generateConfig()
@@ -6631,10 +6614,24 @@
 	  if (this._removed) return
 	  if (this.el.parentNode) this.el.parentNode.removeChild(this.el)
 	  this._removed = true
+	  this.unbindEvents()
 	  this.emit('remove')
 	  // The model may still using, not destroy it
 	  this.model = null
 	  this.off()
+	}
+	
+	/**
+	 * Unbind event handlers
+	 *
+	 * @public
+	 * @return {undefined}
+	 */
+	Reactive.prototype.unbindEvents = function () {
+	  this.events.forEach(function (o) {
+	    event.unbind(o.el, o.name, o.handler)
+	  })
+	  this.events = []
 	}
 	
 	/**
@@ -6643,13 +6640,13 @@
 	 * @param {Array} config
 	 * @api private
 	 */
-	Reactive.prototype._bindConfig = function () {
+	Reactive.prototype._bindConfig = function (noEvent) {
 	  var root = this.el
 	  var reactive = this
 	  this.config.forEach(function (o) {
 	    var el = util.findElement(root, o.indexes)
 	    var binding = new Binding(reactive, el, o.bindings)
-	    binding.active(el)
+	    binding.active(el, noEvent)
 	    reactive.on('remove', function () {
 	      binding.remove()
 	    })
@@ -6744,13 +6741,14 @@
 	}
 	
 	/**
-	 * Bind a new model
+	 * Bind new model, exist event handlers would be removed
 	 *
 	 * @param {Object} model
 	 * @api public
 	 */
 	Reactive.prototype.bind = function (model) {
 	  this.model = model
+	  this.unbindEvents()
 	  this._bindConfig()
 	}
 	
@@ -6761,6 +6759,7 @@
 	 * @param {Object} model
 	 * @param {Object} opt
 	 * @return {Array}
+	 * @deprecated
 	 * @api public
 	 */
 	Reactive.generateConfig = function (el, model, opt) {
@@ -6787,6 +6786,7 @@
 	 *
 	 * @param {String} name attribute name
 	 * @param {Function} fn
+	 * @deprecated
 	 * @api public
 	 */
 	Reactive.createBinding = function (name, fn) {
@@ -6806,6 +6806,7 @@
 	 *
 	 * @param {String} name
 	 * @param {Function} fn
+	 * @deprecated
 	 * @api public
 	 */
 	Reactive.createFilter = function (name, fn) {
@@ -6821,10 +6822,10 @@
 
 
 /***/ },
-/* 68 */
+/* 69 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var unique = __webpack_require__(69)
+	var unique = __webpack_require__(70)
 	var funcRe = /\([^\s]*\)$/
 	
 	/**
@@ -7089,7 +7090,7 @@
 
 
 /***/ },
-/* 69 */
+/* 70 */
 /***/ function(module, exports) {
 
 	/*!
@@ -7123,7 +7124,7 @@
 
 
 /***/ },
-/* 70 */
+/* 71 */
 /***/ function(module, exports) {
 
 	
@@ -7241,11 +7242,11 @@
 
 
 /***/ },
-/* 71 */
+/* 72 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var unique = __webpack_require__(69)
-	var util = __webpack_require__(68)
+	var unique = __webpack_require__(70)
+	var util = __webpack_require__(69)
 	
 	/**
 	 * Create binding instance with reactive and el
@@ -7409,10 +7410,10 @@
 
 
 /***/ },
-/* 72 */
+/* 73 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(68)
+	var util = __webpack_require__(69)
 	var event = __webpack_require__(15)
 	
 	/**
@@ -7524,8 +7525,10 @@
 	        fn.call(context, e, model, el)
 	      }
 	      event.bind(el, name, handler)
-	      this._reactive.on('remove', function () {
-	        event.unbind(el, name, handler)
+	      this._reactive.events.push({
+	        el: el,
+	        name: name,
+	        handler: handler
 	      })
 	    }
 	  }
@@ -7582,173 +7585,6 @@
 	    fn()
 	  }
 	}
-
-
-/***/ },
-/* 73 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Expose `Emitter`.
-	 */
-	
-	module.exports = Emitter;
-	
-	/**
-	 * Initialize a new `Emitter`.
-	 *
-	 * @api public
-	 */
-	
-	function Emitter(obj) {
-	  if (obj) return mixin(obj);
-	};
-	
-	/**
-	 * Mixin the emitter properties.
-	 *
-	 * @param {Object} obj
-	 * @return {Object}
-	 * @api private
-	 */
-	
-	function mixin(obj) {
-	  for (var key in Emitter.prototype) {
-	    obj[key] = Emitter.prototype[key];
-	  }
-	  return obj;
-	}
-	
-	/**
-	 * Listen on the given `event` with `fn`.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-	
-	Emitter.prototype.on =
-	Emitter.prototype.addEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-	  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
-	    .push(fn);
-	  return this;
-	};
-	
-	/**
-	 * Adds an `event` listener that will be invoked a single
-	 * time then automatically removed.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-	
-	Emitter.prototype.once = function(event, fn){
-	  function on() {
-	    this.off(event, on);
-	    fn.apply(this, arguments);
-	  }
-	
-	  on.fn = fn;
-	  this.on(event, on);
-	  return this;
-	};
-	
-	/**
-	 * Remove the given callback for `event` or all
-	 * registered callbacks.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-	
-	Emitter.prototype.off =
-	Emitter.prototype.removeListener =
-	Emitter.prototype.removeAllListeners =
-	Emitter.prototype.removeEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-	
-	  // all
-	  if (0 == arguments.length) {
-	    this._callbacks = {};
-	    return this;
-	  }
-	
-	  // specific event
-	  var callbacks = this._callbacks['$' + event];
-	  if (!callbacks) return this;
-	
-	  // remove all handlers
-	  if (1 == arguments.length) {
-	    delete this._callbacks['$' + event];
-	    return this;
-	  }
-	
-	  // remove specific handler
-	  var cb;
-	  for (var i = 0; i < callbacks.length; i++) {
-	    cb = callbacks[i];
-	    if (cb === fn || cb.fn === fn) {
-	      callbacks.splice(i, 1);
-	      break;
-	    }
-	  }
-	  return this;
-	};
-	
-	/**
-	 * Emit `event` with the given args.
-	 *
-	 * @param {String} event
-	 * @param {Mixed} ...
-	 * @return {Emitter}
-	 */
-	
-	Emitter.prototype.emit = function(event){
-	  this._callbacks = this._callbacks || {};
-	  var args = [].slice.call(arguments, 1)
-	    , callbacks = this._callbacks['$' + event];
-	
-	  if (callbacks) {
-	    callbacks = callbacks.slice(0);
-	    for (var i = 0, len = callbacks.length; i < len; ++i) {
-	      callbacks[i].apply(this, args);
-	    }
-	  }
-	
-	  return this;
-	};
-	
-	/**
-	 * Return array of callbacks for `event`.
-	 *
-	 * @param {String} event
-	 * @return {Array}
-	 * @api public
-	 */
-	
-	Emitter.prototype.listeners = function(event){
-	  this._callbacks = this._callbacks || {};
-	  return this._callbacks['$' + event] || [];
-	};
-	
-	/**
-	 * Check if this emitter has `event` handlers.
-	 *
-	 * @param {String} event
-	 * @return {Boolean}
-	 * @api public
-	 */
-	
-	Emitter.prototype.hasListeners = function(event){
-	  return !! this.listeners(event).length;
-	};
 
 
 /***/ },
@@ -7847,124 +7683,6 @@
 /* 75 */
 /***/ function(module, exports) {
 
-	
-	/**
-	 * Expose `parse`.
-	 */
-	
-	module.exports = parse;
-	
-	/**
-	 * Tests for browser support.
-	 */
-	
-	var innerHTMLBug = false;
-	var bugTestDiv;
-	if (typeof document !== 'undefined') {
-	  bugTestDiv = document.createElement('div');
-	  // Setup
-	  bugTestDiv.innerHTML = '  <link/><table></table><a href="/a">a</a><input type="checkbox"/>';
-	  // Make sure that link elements get serialized correctly by innerHTML
-	  // This requires a wrapper element in IE
-	  innerHTMLBug = !bugTestDiv.getElementsByTagName('link').length;
-	  bugTestDiv = undefined;
-	}
-	
-	/**
-	 * Wrap map from jquery.
-	 */
-	
-	var map = {
-	  legend: [1, '<fieldset>', '</fieldset>'],
-	  tr: [2, '<table><tbody>', '</tbody></table>'],
-	  col: [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],
-	  // for script/link/style tags to work in IE6-8, you have to wrap
-	  // in a div with a non-whitespace character in front, ha!
-	  _default: innerHTMLBug ? [1, 'X<div>', '</div>'] : [0, '', '']
-	};
-	
-	map.td =
-	map.th = [3, '<table><tbody><tr>', '</tr></tbody></table>'];
-	
-	map.option =
-	map.optgroup = [1, '<select multiple="multiple">', '</select>'];
-	
-	map.thead =
-	map.tbody =
-	map.colgroup =
-	map.caption =
-	map.tfoot = [1, '<table>', '</table>'];
-	
-	map.polyline =
-	map.ellipse =
-	map.polygon =
-	map.circle =
-	map.text =
-	map.line =
-	map.path =
-	map.rect =
-	map.g = [1, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">','</svg>'];
-	
-	/**
-	 * Parse `html` and return a DOM Node instance, which could be a TextNode,
-	 * HTML DOM Node of some kind (<div> for example), or a DocumentFragment
-	 * instance, depending on the contents of the `html` string.
-	 *
-	 * @param {String} html - HTML string to "domify"
-	 * @param {Document} doc - The `document` instance to create the Node for
-	 * @return {DOMNode} the TextNode, DOM Node, or DocumentFragment instance
-	 * @api private
-	 */
-	
-	function parse(html, doc) {
-	  if ('string' != typeof html) throw new TypeError('String expected');
-	
-	  // default to the global `document` object
-	  if (!doc) doc = document;
-	
-	  // tag name
-	  var m = /<([\w:]+)/.exec(html);
-	  if (!m) return doc.createTextNode(html);
-	
-	  html = html.replace(/^\s+|\s+$/g, ''); // Remove leading/trailing whitespace
-	
-	  var tag = m[1];
-	
-	  // body support
-	  if (tag == 'body') {
-	    var el = doc.createElement('html');
-	    el.innerHTML = html;
-	    return el.removeChild(el.lastChild);
-	  }
-	
-	  // wrap map
-	  var wrap = map[tag] || map._default;
-	  var depth = wrap[0];
-	  var prefix = wrap[1];
-	  var suffix = wrap[2];
-	  var el = doc.createElement('div');
-	  el.innerHTML = prefix + html + suffix;
-	  while (depth--) el = el.lastChild;
-	
-	  // one element
-	  if (el.firstChild == el.lastChild) {
-	    return el.removeChild(el.firstChild);
-	  }
-	
-	  // several elements
-	  var fragment = doc.createDocumentFragment();
-	  while (el.firstChild) {
-	    fragment.appendChild(el.removeChild(el.firstChild));
-	  }
-	
-	  return fragment;
-	}
-
-
-/***/ },
-/* 76 */
-/***/ function(module, exports) {
-
 	/**
 	 * Export `uid`
 	 */
@@ -7985,134 +7703,16 @@
 
 
 /***/ },
-/* 77 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Expose `parse`.
-	 */
-	
-	module.exports = parse;
-	
-	/**
-	 * Tests for browser support.
-	 */
-	
-	var innerHTMLBug = false;
-	var bugTestDiv;
-	if (typeof document !== 'undefined') {
-	  bugTestDiv = document.createElement('div');
-	  // Setup
-	  bugTestDiv.innerHTML = '  <link/><table></table><a href="/a">a</a><input type="checkbox"/>';
-	  // Make sure that link elements get serialized correctly by innerHTML
-	  // This requires a wrapper element in IE
-	  innerHTMLBug = !bugTestDiv.getElementsByTagName('link').length;
-	  bugTestDiv = undefined;
-	}
-	
-	/**
-	 * Wrap map from jquery.
-	 */
-	
-	var map = {
-	  legend: [1, '<fieldset>', '</fieldset>'],
-	  tr: [2, '<table><tbody>', '</tbody></table>'],
-	  col: [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],
-	  // for script/link/style tags to work in IE6-8, you have to wrap
-	  // in a div with a non-whitespace character in front, ha!
-	  _default: innerHTMLBug ? [1, 'X<div>', '</div>'] : [0, '', '']
-	};
-	
-	map.td =
-	map.th = [3, '<table><tbody><tr>', '</tr></tbody></table>'];
-	
-	map.option =
-	map.optgroup = [1, '<select multiple="multiple">', '</select>'];
-	
-	map.thead =
-	map.tbody =
-	map.colgroup =
-	map.caption =
-	map.tfoot = [1, '<table>', '</table>'];
-	
-	map.polyline =
-	map.ellipse =
-	map.polygon =
-	map.circle =
-	map.text =
-	map.line =
-	map.path =
-	map.rect =
-	map.g = [1, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">','</svg>'];
-	
-	/**
-	 * Parse `html` and return a DOM Node instance, which could be a TextNode,
-	 * HTML DOM Node of some kind (<div> for example), or a DocumentFragment
-	 * instance, depending on the contents of the `html` string.
-	 *
-	 * @param {String} html - HTML string to "domify"
-	 * @param {Document} doc - The `document` instance to create the Node for
-	 * @return {DOMNode} the TextNode, DOM Node, or DocumentFragment instance
-	 * @api private
-	 */
-	
-	function parse(html, doc) {
-	  if ('string' != typeof html) throw new TypeError('String expected');
-	
-	  // default to the global `document` object
-	  if (!doc) doc = document;
-	
-	  // tag name
-	  var m = /<([\w:]+)/.exec(html);
-	  if (!m) return doc.createTextNode(html);
-	
-	  html = html.replace(/^\s+|\s+$/g, ''); // Remove leading/trailing whitespace
-	
-	  var tag = m[1];
-	
-	  // body support
-	  if (tag == 'body') {
-	    var el = doc.createElement('html');
-	    el.innerHTML = html;
-	    return el.removeChild(el.lastChild);
-	  }
-	
-	  // wrap map
-	  var wrap = map[tag] || map._default;
-	  var depth = wrap[0];
-	  var prefix = wrap[1];
-	  var suffix = wrap[2];
-	  var el = doc.createElement('div');
-	  el.innerHTML = prefix + html + suffix;
-	  while (depth--) el = el.lastChild;
-	
-	  // one element
-	  if (el.firstChild == el.lastChild) {
-	    return el.removeChild(el.firstChild);
-	  }
-	
-	  // several elements
-	  var fragment = doc.createDocumentFragment();
-	  while (el.firstChild) {
-	    fragment.appendChild(el.removeChild(el.firstChild));
-	  }
-	
-	  return fragment;
-	}
-
-
-/***/ },
-/* 78 */
+/* 76 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Emitter = __webpack_require__(79)
-	var events = __webpack_require__(53)
-	var domify = __webpack_require__(80)
-	var query = __webpack_require__(57)
+	var Emitter = __webpack_require__(10)
+	var events = __webpack_require__(60)
+	var domify = __webpack_require__(71)
+	var query = __webpack_require__(53)
 	var classes = __webpack_require__(16)
-	var tap = __webpack_require__(81)
-	var template = __webpack_require__(82)
+	var tap = __webpack_require__(77)
+	var template = __webpack_require__(78)
 	
 	var defineProperty = Object.defineProperty
 	/**
@@ -8326,292 +7926,7 @@
 
 
 /***/ },
-/* 79 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Expose `Emitter`.
-	 */
-	
-	module.exports = Emitter;
-	
-	/**
-	 * Initialize a new `Emitter`.
-	 *
-	 * @api public
-	 */
-	
-	function Emitter(obj) {
-	  if (obj) return mixin(obj);
-	};
-	
-	/**
-	 * Mixin the emitter properties.
-	 *
-	 * @param {Object} obj
-	 * @return {Object}
-	 * @api private
-	 */
-	
-	function mixin(obj) {
-	  for (var key in Emitter.prototype) {
-	    obj[key] = Emitter.prototype[key];
-	  }
-	  return obj;
-	}
-	
-	/**
-	 * Listen on the given `event` with `fn`.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-	
-	Emitter.prototype.on =
-	Emitter.prototype.addEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-	  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
-	    .push(fn);
-	  return this;
-	};
-	
-	/**
-	 * Adds an `event` listener that will be invoked a single
-	 * time then automatically removed.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-	
-	Emitter.prototype.once = function(event, fn){
-	  function on() {
-	    this.off(event, on);
-	    fn.apply(this, arguments);
-	  }
-	
-	  on.fn = fn;
-	  this.on(event, on);
-	  return this;
-	};
-	
-	/**
-	 * Remove the given callback for `event` or all
-	 * registered callbacks.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-	
-	Emitter.prototype.off =
-	Emitter.prototype.removeListener =
-	Emitter.prototype.removeAllListeners =
-	Emitter.prototype.removeEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-	
-	  // all
-	  if (0 == arguments.length) {
-	    this._callbacks = {};
-	    return this;
-	  }
-	
-	  // specific event
-	  var callbacks = this._callbacks['$' + event];
-	  if (!callbacks) return this;
-	
-	  // remove all handlers
-	  if (1 == arguments.length) {
-	    delete this._callbacks['$' + event];
-	    return this;
-	  }
-	
-	  // remove specific handler
-	  var cb;
-	  for (var i = 0; i < callbacks.length; i++) {
-	    cb = callbacks[i];
-	    if (cb === fn || cb.fn === fn) {
-	      callbacks.splice(i, 1);
-	      break;
-	    }
-	  }
-	  return this;
-	};
-	
-	/**
-	 * Emit `event` with the given args.
-	 *
-	 * @param {String} event
-	 * @param {Mixed} ...
-	 * @return {Emitter}
-	 */
-	
-	Emitter.prototype.emit = function(event){
-	  this._callbacks = this._callbacks || {};
-	  var args = [].slice.call(arguments, 1)
-	    , callbacks = this._callbacks['$' + event];
-	
-	  if (callbacks) {
-	    callbacks = callbacks.slice(0);
-	    for (var i = 0, len = callbacks.length; i < len; ++i) {
-	      callbacks[i].apply(this, args);
-	    }
-	  }
-	
-	  return this;
-	};
-	
-	/**
-	 * Return array of callbacks for `event`.
-	 *
-	 * @param {String} event
-	 * @return {Array}
-	 * @api public
-	 */
-	
-	Emitter.prototype.listeners = function(event){
-	  this._callbacks = this._callbacks || {};
-	  return this._callbacks['$' + event] || [];
-	};
-	
-	/**
-	 * Check if this emitter has `event` handlers.
-	 *
-	 * @param {String} event
-	 * @return {Boolean}
-	 * @api public
-	 */
-	
-	Emitter.prototype.hasListeners = function(event){
-	  return !! this.listeners(event).length;
-	};
-
-
-/***/ },
-/* 80 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Expose `parse`.
-	 */
-	
-	module.exports = parse;
-	
-	/**
-	 * Tests for browser support.
-	 */
-	
-	var innerHTMLBug = false;
-	var bugTestDiv;
-	if (typeof document !== 'undefined') {
-	  bugTestDiv = document.createElement('div');
-	  // Setup
-	  bugTestDiv.innerHTML = '  <link/><table></table><a href="/a">a</a><input type="checkbox"/>';
-	  // Make sure that link elements get serialized correctly by innerHTML
-	  // This requires a wrapper element in IE
-	  innerHTMLBug = !bugTestDiv.getElementsByTagName('link').length;
-	  bugTestDiv = undefined;
-	}
-	
-	/**
-	 * Wrap map from jquery.
-	 */
-	
-	var map = {
-	  legend: [1, '<fieldset>', '</fieldset>'],
-	  tr: [2, '<table><tbody>', '</tbody></table>'],
-	  col: [2, '<table><tbody></tbody><colgroup>', '</colgroup></table>'],
-	  // for script/link/style tags to work in IE6-8, you have to wrap
-	  // in a div with a non-whitespace character in front, ha!
-	  _default: innerHTMLBug ? [1, 'X<div>', '</div>'] : [0, '', '']
-	};
-	
-	map.td =
-	map.th = [3, '<table><tbody><tr>', '</tr></tbody></table>'];
-	
-	map.option =
-	map.optgroup = [1, '<select multiple="multiple">', '</select>'];
-	
-	map.thead =
-	map.tbody =
-	map.colgroup =
-	map.caption =
-	map.tfoot = [1, '<table>', '</table>'];
-	
-	map.polyline =
-	map.ellipse =
-	map.polygon =
-	map.circle =
-	map.text =
-	map.line =
-	map.path =
-	map.rect =
-	map.g = [1, '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">','</svg>'];
-	
-	/**
-	 * Parse `html` and return a DOM Node instance, which could be a TextNode,
-	 * HTML DOM Node of some kind (<div> for example), or a DocumentFragment
-	 * instance, depending on the contents of the `html` string.
-	 *
-	 * @param {String} html - HTML string to "domify"
-	 * @param {Document} doc - The `document` instance to create the Node for
-	 * @return {DOMNode} the TextNode, DOM Node, or DocumentFragment instance
-	 * @api private
-	 */
-	
-	function parse(html, doc) {
-	  if ('string' != typeof html) throw new TypeError('String expected');
-	
-	  // default to the global `document` object
-	  if (!doc) doc = document;
-	
-	  // tag name
-	  var m = /<([\w:]+)/.exec(html);
-	  if (!m) return doc.createTextNode(html);
-	
-	  html = html.replace(/^\s+|\s+$/g, ''); // Remove leading/trailing whitespace
-	
-	  var tag = m[1];
-	
-	  // body support
-	  if (tag == 'body') {
-	    var el = doc.createElement('html');
-	    el.innerHTML = html;
-	    return el.removeChild(el.lastChild);
-	  }
-	
-	  // wrap map
-	  var wrap = map[tag] || map._default;
-	  var depth = wrap[0];
-	  var prefix = wrap[1];
-	  var suffix = wrap[2];
-	  var el = doc.createElement('div');
-	  el.innerHTML = prefix + html + suffix;
-	  while (depth--) el = el.lastChild;
-	
-	  // one element
-	  if (el.firstChild == el.lastChild) {
-	    return el.removeChild(el.firstChild);
-	  }
-	
-	  // several elements
-	  var fragment = doc.createDocumentFragment();
-	  while (el.firstChild) {
-	    fragment.appendChild(el.removeChild(el.firstChild));
-	  }
-	
-	  return fragment;
-	}
-
-
-/***/ },
-/* 81 */
+/* 77 */
 /***/ function(module, exports) {
 
 	var endEvents = [
@@ -8658,7 +7973,6 @@
 	      // it'll execute this on the same touchstart.
 	      // this filters out the same touchstart event.
 	      if (e1 === e2) return
-	      if (e2.clientX !== e1.clientX || e2.clientY !== e1.clientY) return
 	
 	      cleanup()
 	
@@ -8705,24 +8019,24 @@
 
 
 /***/ },
-/* 82 */
+/* 78 */
 /***/ function(module, exports) {
 
 	module.exports = "<ul class=\"pager\">\n  <li class=\"prev\"><a href=\"#\">&lsaquo;</a></li>\n  <li class=\"next\"><a href=\"#\">&rsaquo;</a></li>\n</ul>\n";
 
 /***/ },
-/* 83 */
+/* 79 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var Overlay = __webpack_require__(11)
 	var Notice = __webpack_require__(52)
 	var spin = __webpack_require__(18)
-	var Grid = __webpack_require__(60)
-	var template = __webpack_require__(84)
-	var data = __webpack_require__(59)
-	var Reactive = __webpack_require__(67)
-	var Changed = __webpack_require__(85)
-	var Pager = __webpack_require__(78)
+	var Grid = __webpack_require__(58)
+	var template = __webpack_require__(80)
+	var data = __webpack_require__(57)
+	var Reactive = __webpack_require__(68)
+	var Changed = __webpack_require__(81)
+	var Pager = __webpack_require__(76)
 	
 	var placeholder = document.getElementById('grid')
 	placeholder.className = 'shows-table left'
@@ -8788,18 +8102,18 @@
 
 
 /***/ },
-/* 84 */
+/* 80 */
 /***/ function(module, exports) {
 
 	module.exports = "<table>\n  <thead>\n    <tr>\n      <th class=\"sort\" data-sort=\"name\">name</th>\n      <th class=\"sort\" data-sort=\"age\">age</th>\n      <th>company</th>\n      <th class=\"sort\" data-sort=\"number\">money</th>\n      <th>active</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td class=\"left\">{name}</td>\n      <td style=\"width:30px;\">{age}</td>\n      <td class=\"left\">{company}</td>\n      <td class=\"money\">¥{money | currency 2}</td>\n      <td data-render=\"setActive\" class=\"center\"></td>\n    </tr>\n  </tbody>\n</table>\n";
 
 /***/ },
-/* 85 */
+/* 81 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var invalid = __webpack_require__(86)
-	var query = __webpack_require__(57)
-	var serialize = __webpack_require__(88)
+	var invalid = __webpack_require__(82)
+	var query = __webpack_require__(53)
+	var serialize = __webpack_require__(84)
 	
 	/**
 	 * Init changed by `form` and `format` Object
@@ -8951,10 +8265,10 @@
 
 
 /***/ },
-/* 86 */
+/* 82 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var computedStyle = __webpack_require__(87)
+	var computedStyle = __webpack_require__(83)
 	
 	/**
 	 * Check if element is invalid
@@ -8991,7 +8305,7 @@
 
 
 /***/ },
-/* 87 */
+/* 83 */
 /***/ function(module, exports) {
 
 	// DEV: We don't use var but favor parameters since these play nicer with minification
@@ -9024,7 +8338,7 @@
 
 
 /***/ },
-/* 88 */
+/* 84 */
 /***/ function(module, exports) {
 
 	// get successful control from form and assemble into object
