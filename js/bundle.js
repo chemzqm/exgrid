@@ -72,7 +72,7 @@
 	  },
 	  bindings: {
 	    react: function (prop) {
-	      this.bind('$stat', function (model, el) {
+	      this.bind(prop, function (model, el) {
 	        var changed = model.changed()
 	        if (prop === '$stat') {
 	          el.disabled = changed === false ? true : false
